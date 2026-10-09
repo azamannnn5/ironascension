@@ -1,0 +1,9 @@
+{
+  "name": "iron-ascension",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Iron Ascension site - static frontend + Netlify Functions backend (Supabase-backed catalog, orders, and admin panel).",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

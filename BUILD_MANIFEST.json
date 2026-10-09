@@ -1,0 +1,72 @@
+{
+  "architecture": "data-driven",
+  "product_count": 64,
+  "categories": [
+    {
+      "category": 1,
+      "name": "Injectables",
+      "products": [
+        1,
+        21
+      ]
+    },
+    {
+      "category": 2,
+      "name": "Oral Tablets",
+      "products": [
+        22,
+        31
+      ]
+    },
+    {
+      "category": 3,
+      "name": "Category 3",
+      "products": [
+        32,
+        36
+      ]
+    },
+    {
+      "category": 4,
+      "name": "Category 4",
+      "products": [
+        37,
+        37
+      ]
+    },
+    {
+      "category": 5,
+      "name": "Performance & Support",
+      "products": [
+        38,
+        43
+      ]
+    },
+    {
+      "category": 6,
+      "name": "HGH",
+      "products": [
+        44,
+        50
+      ]
+    },
+    {
+      "category": 7,
+      "name": "Category 7",
+      "products": [
+        51,
+        64
+      ]
+    }
+  ],
+  "product_page": "product.html?id=product-N",
+  "merch_page": "merch.html",
+  "merch_detail_page": "merch-product.html?id=merch-id",
+  "merch_count": 9,
+  "notes": [
+    "Products and Merch are separate pages.",
+    "Each category has its own page.",
+    "Removed the CAT/INFO/FLOW placeholder content from category pages.",
+    "All product cards are generated from central data."
+  ]
+}

@@ -1,0 +1,1533 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin | Iron Ascension</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  :root { --side: 248px; --card-radius: 8px; }
+  * { box-sizing: border-box; }
+  body { background: #f5f5f5; font-family: Inter, Arial, sans-serif; margin: 0; }
+  [hidden] { display: none !important; }
+
+  /* ---------- App shell: sidebar + content ---------- */
+  #admin-app { display: flex; min-height: 100vh; }
+  .sidebar { width: var(--side); flex-shrink: 0; background: #111; color: #fff; padding: 22px 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+  .side-brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; border-bottom: 1px solid #2a2a2a; margin-bottom: 14px; }
+  .side-brand img { height: 30px; }
+  .side-brand span { font: 800 13px Montserrat, sans-serif; letter-spacing: .6px; }
+  .nav-group { margin-bottom: 14px; }
+  .nav-group-label { font: 800 10px Montserrat, sans-serif; letter-spacing: 1.4px; text-transform: uppercase; color: #777; padding: 8px 10px 6px; }
+  .nav-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: none; color: #cfcfcf; font: 600 13.5px Inter, sans-serif; padding: 9px 10px; border-radius: 5px; cursor: pointer; text-align: left; }
+  .nav-btn:hover { background: #1c1c1c; color: #fff; }
+  .nav-btn.active { background: var(--red); color: #fff; }
+  .side-foot { margin-top: auto; padding-top: 14px; border-top: 1px solid #2a2a2a; display: flex; flex-direction: column; gap: 6px; }
+  .side-foot a, .side-foot button { color: #aaa; font: 600 13px Inter, sans-serif; background: none; border: none; text-align: left; padding: 8px 10px; cursor: pointer; border-radius: 5px; }
+  .side-foot a:hover, .side-foot button:hover { color: #fff; background: #1c1c1c; }
+  .content { flex: 1; min-width: 0; padding: 36px 40px 100px; max-width: 1180px; }
+  .mobile-bar { display: none; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-head { margin-bottom: 26px; }
+  .page-head h1 { font: 800 1.5rem Montserrat, sans-serif; margin: 0 0 6px; color: #111; }
+  .page-head p { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.6; max-width: 680px; }
+
+  /* ---------- Cards, fields, buttons ---------- */
+  .card { background: #fff; border: 1px solid var(--line); border-radius: var(--card-radius); padding: 28px; margin-bottom: 22px; }
+  .card h3 { margin: 0 0 6px; font: 700 1.02rem Montserrat, sans-serif; }
+  .card-intro { font-size: .82rem; color: var(--muted); line-height: 1.6; margin: 0 0 22px; max-width: 640px; }
+  .divider { border: none; border-top: 1px solid var(--line); margin: 26px 0; }
+  .section-label { font: 800 .72rem Montserrat, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 14px; }
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: .73rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .03em; }
+  .field input, .field select, .field textarea { width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 4px; font-family: inherit; font-size: .9rem; background: #fafafa; color: var(--ink); }
+  .field textarea { min-height: 80px; resize: vertical; line-height: 1.55; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid rgba(200,16,46,.25); border-color: var(--red); background: #fff; }
+  .help { font-size: .75rem; color: var(--muted); line-height: 1.5; margin: 6px 2px 0; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .btn-tiny { padding: 7px 14px; font-size: .75rem; }
+  .btn-danger { color: var(--red) !important; border-color: var(--red) !important; }
+  .actions-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .msg { font-size: .85rem; margin-top: 14px; padding: 12px 14px; border-radius: 4px; display: none; line-height: 1.5; }
+  .msg.show { display: block; }
+  .msg.ok { background: rgba(31,122,52,.12); color: #1f7a34; }
+  .msg.err { background: rgba(200,16,46,.1); color: var(--red); }
+  .note { font-size: .8rem; color: var(--muted); line-height: 1.6; margin: 0 0 18px; }
+  .save-bar { position: sticky; bottom: 0; background: linear-gradient(to top, #f5f5f5 70%, rgba(245,245,245,0)); padding: 18px 0 6px; }
+
+  /* ---------- Tables ---------- */
+  .table-scroll { width: 100%; overflow-x: auto; }
+  .table { width: 100%; border-collapse: collapse; min-width: 520px; }
+  .table th { text-align: left; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 11px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .table td { padding: 12px; border-bottom: 1px solid var(--line); font-size: .85rem; vertical-align: top; }
+  .table tr:last-child td { border-bottom: none; }
+  .muted { color: var(--muted); font-size: .78rem; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .toolbar input, .toolbar select { padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px; font: inherit; font-size: .85rem; background: #fff; }
+  .toolbar input[type="search"] { min-width: 220px; }
+  .stock-pill { display: inline-flex; align-items: center; font-size: .72rem; font-weight: 700; padding: 6px 12px; border-radius: 999px; cursor: pointer; border: none; }
+  .stock-pill.in { color: #1f7a34; background: rgba(31,122,52,.14); }
+  .stock-pill.out { color: #888; background: rgba(120,120,120,.14); text-decoration: line-through; }
+  .tag { display: inline-block; font-size: .68rem; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: #111; color: #fff; }
+  .tag.sale { background: var(--red); }
+  .status-select { padding: 7px 10px; border-radius: 4px; border: 1px solid var(--line); font-size: .78rem; background: #fff; }
+  .items-list { margin: 0; padding-left: 16px; font-size: .78rem; color: var(--muted); }
+  details.more summary { cursor: pointer; font-size: .75rem; color: var(--red); font-weight: 700; margin-top: 6px; }
+  details.more div { font-size: .78rem; color: #555; line-height: 1.6; margin-top: 6px; white-space: pre-wrap; }
+
+  /* ---------- Dashboard ---------- */
+  .stat { background: #fff; border: 1px solid var(--line); border-radius: var(--card-radius); padding: 20px; cursor: pointer; text-align: left; font: inherit; }
+  .stat:hover { border-color: var(--red); }
+  .stat b { display: block; font: 800 1.9rem Montserrat, sans-serif; color: #111; }
+  .stat span { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+  .stats { margin-bottom: 22px; }
+
+  /* ---------- Repeating row editors (payments, FAQ, featured) ---------- */
+  .rows { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+  .row-item { border: 1px solid var(--line); border-radius: 6px; background: #fafafa; padding: 14px; display: grid; gap: 10px; }
+  .row-item .row-top { display: flex; gap: 8px; align-items: center; }
+  .row-item .row-top input { flex: 1; padding: 9px 11px; border: 1px solid var(--line); border-radius: 4px; font: inherit; font-size: .88rem; background: #fff; }
+  .row-item textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 4px; font: inherit; font-size: .85rem; background: #fff; min-height: 64px; resize: vertical; line-height: 1.5; }
+  .icon-btn { background: #fff; border: 1px solid var(--line); border-radius: 4px; width: 32px; height: 32px; cursor: pointer; font-size: .9rem; color: #555; flex-shrink: 0; }
+  .icon-btn:hover:not(:disabled) { border-color: #111; color: #111; }
+  .icon-btn:disabled { opacity: .35; cursor: default; }
+  .icon-btn.remove { color: var(--red); }
+  .template-card { border: 1px solid var(--line); border-radius: 6px; padding: 18px; margin-bottom: 14px; background: #fafafa; }
+  .template-card h4 { margin: 0 0 12px; font: 700 .92rem Montserrat, sans-serif; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .switch { display: inline-flex; align-items: center; gap: 8px; font: 600 .78rem Inter, sans-serif; color: var(--muted); cursor: pointer; }
+  .switch input { width: 17px; height: 17px; accent-color: var(--red); }
+
+  /* ---------- Uploads ---------- */
+  .upload-field { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .upload-preview { width: 64px; height: 64px; border-radius: 4px; border: 1px solid var(--line); background: #fafafa; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; font-size: .62rem; color: var(--muted); text-align: center; }
+  .upload-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .upload-controls { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
+  .upload-controls input[type="file"] { display: none; }
+  .upload-status { font-size: .72rem; color: var(--muted); word-break: break-all; }
+  .upload-status.uploading, .upload-status.error { color: var(--red); font-weight: 600; }
+  .variant-rows { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
+  .variant-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px; border: 1px solid var(--line); border-radius: 4px; background: #fafafa; }
+  .variant-row input[type="text"] { flex: 1; min-width: 120px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 4px; font: inherit; font-size: .85rem; background: #fff; }
+  .variant-row .upload-preview { width: 40px; height: 40px; }
+  .variant-remove-btn { background: none; border: none; color: var(--red); font-weight: 700; font-size: .78rem; cursor: pointer; padding: 6px 8px; }
+
+  /* ---------- Inbox ---------- */
+  .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--red); color: #fff; font-size: .68rem; font-weight: 800; margin-left: 6px; }
+  .nav-btn.active .badge { background: #fff; color: var(--red); }
+  .notif-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .notif-toolbar label { display: flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--muted); cursor: pointer; }
+  .notif-list { display: flex; flex-direction: column; gap: 10px; }
+  .notif-row { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .notif-row.unread { background: rgba(200,16,46,.035); border-color: rgba(200,16,46,.25); }
+  .notif-row input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; width: 16px; height: 16px; }
+  .notif-body { flex: 1; min-width: 0; }
+  .notif-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .notif-title { font-weight: 700; font-size: .86rem; color: var(--ink); }
+  .notif-date { font-size: .72rem; color: var(--muted); white-space: nowrap; }
+  .notif-detail { font-size: .8rem; color: #555; line-height: 1.6; margin-top: 4px; white-space: pre-wrap; }
+  .notif-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--red); margin-right: 7px; }
+  .notif-btn { background: none; border: none; color: var(--red); font-size: .72rem; font-weight: 700; cursor: pointer; padding: 4px 0; margin-top: 6px; }
+  .empty { color: var(--muted); font-size: .85rem; padding: 8px 0; }
+
+  /* ---------- Login ---------- */
+  #login-screen { max-width: 380px; margin: 90px auto; text-align: center; padding: 0 16px; }
+  #login-screen .card { text-align: left; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 960px) {
+    #admin-app { flex-direction: column; }
+    .sidebar { display: none; }
+    .mobile-bar { display: flex; gap: 10px; align-items: center; padding: 12px 16px; background: #111; position: sticky; top: 0; z-index: 20; }
+    .mobile-bar img { height: 26px; }
+    .mobile-bar select { flex: 1; padding: 9px 10px; border-radius: 4px; border: none; font: 600 .9rem Inter, sans-serif; }
+    .content { padding: 22px 14px 80px; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 780px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================= LOGIN ======================= -->
+<div id="login-screen">
+  <img src="assets/images/logo/logo-header.png" alt="Iron Ascension" style="height:38px; margin-bottom:20px;" />
+  <div class="card">
+    <h2 style="margin:0 0 6px; font-family:Montserrat,sans-serif; font-size:1.4rem;">Admin Login</h2>
+    <p style="font-size:.85rem; color:var(--muted); margin:0 0 18px;">Enter the site admin password to manage orders, products, checkout and site content.</p>
+    <div class="field"><label>Password</label><input type="password" id="login-password" autocomplete="current-password" /></div>
+    <button class="btn btn-red" style="width:100%;justify-content:center" id="login-btn">Log In</button>
+    <div class="msg" id="login-msg"></div>
+  </div>
+</div>
+
+<div id="admin-app" hidden>
+
+  <!-- ======================= NAVIGATION ======================= -->
+  <div class="mobile-bar">
+    <img src="assets/images/logo/logo-footer.png" alt="Iron Ascension" />
+    <select id="mobile-nav" aria-label="Go to page"></select>
+  </div>
+  <aside class="sidebar">
+    <div class="side-brand"><img src="assets/images/logo/logo-footer.png" alt="" /><span>ADMIN</span></div>
+
+    <div class="nav-group">
+      <button class="nav-btn" data-page="dashboard">Overview</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Sales</div>
+      <button class="nav-btn" data-page="orders">Orders</button>
+      <button class="nav-btn" data-page="inbox">Inbox <span id="inbox-badge" class="badge" hidden>0</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Catalog</div>
+      <button class="nav-btn" data-page="products">Products</button>
+      <button class="nav-btn" data-page="merch">Merch</button>
+      <button class="nav-btn" data-page="categories">Categories</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Checkout</div>
+      <button class="nav-btn" data-page="payments">Payment Methods</button>
+      <button class="nav-btn" data-page="discounts">Discounts</button>
+      <button class="nav-btn" data-page="shipping">Shipping &amp; Gifts</button>
+      <button class="nav-btn" data-page="emails">Emails</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Site Content</div>
+      <button class="nav-btn" data-page="homepage">Homepage</button>
+      <button class="nav-btn" data-page="faq">FAQ</button>
+      <button class="nav-btn" data-page="policies">Shipping &amp; Returns Text</button>
+      <button class="nav-btn" data-page="contact">Contact &amp; Footer</button>
+    </div>
+    <div class="side-foot">
+      <a href="index.html" target="_blank" rel="noopener">View site</a>
+      <button id="logout-btn" type="button">Log out</button>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <!-- ======================= OVERVIEW ======================= -->
+    <section class="page" id="page-dashboard">
+      <div class="page-head"><h1>Overview</h1><p>Everything here is live the moment you hit Save, usually within about a minute, with no redeploy needed.</p></div>
+      <div class="grid-4 stats">
+        <button class="stat" data-goto="orders"><b id="stat-new">0</b><span>New orders</span></button>
+        <button class="stat" data-goto="inbox"><b id="stat-unread">0</b><span>Unread in inbox</span></button>
+        <button class="stat" data-goto="products"><b id="stat-products">0</b><span>Products</span></button>
+        <button class="stat" data-goto="merch"><b id="stat-merch">0</b><span>Merch items</span></button>
+      </div>
+      <div class="card">
+        <h3>Recent orders</h3>
+        <p class="card-intro">The latest five order requests. Open Orders to manage them.</p>
+        <div id="dash-recent"></div>
+      </div>
+      <div class="card">
+        <h3>What you can change here</h3>
+        <p class="card-intro">All of this works without redeploying the site.</p>
+        <div class="grid-2">
+          <div><div class="section-label">Checkout</div><p class="note">Payment methods and how-to-pay instructions, discounts, free shipping and gift thresholds, the order confirmation message, and the emails customers get when you update an order.</p></div>
+          <div><div class="section-label">Site content</div><p class="note">Homepage headline, image and featured products, FAQ, Shipping and Returns text, contact details, working hours, footer tagline and social links.</p></div>
+          <div><div class="section-label">Catalog</div><p class="note">Products and merch, including sale prices, badges such as New or Bestseller, sort order, photos and stock.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= ORDERS ======================= -->
+    <section class="page" id="page-orders">
+      <div class="page-head"><h1>Orders</h1><p>Order requests from the cart. Nothing is charged automatically: follow up with the customer to confirm payment and shipping, then move the order through the statuses.</p></div>
+      <div class="card">
+        <div class="toolbar">
+          <select id="orders-filter" aria-label="Filter by status">
+            <option value="">All statuses</option>
+            <option value="new">New</option><option value="contacted">Contacted</option><option value="paid">Paid</option>
+            <option value="shipped">Shipped</option><option value="fulfilled">Fulfilled</option><option value="cancelled">Cancelled</option>
+          </select>
+          <input type="search" id="orders-search" placeholder="Search order #, name, email" />
+          <button class="btn btn-outline btn-tiny" id="orders-refresh" type="button">Refresh</button>
+        </div>
+        <div class="table-scroll">
+          <table class="table">
+            <thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr></thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+        <div class="msg" id="orders-msg"></div>
+      </div>
+    </section>
+
+    <!-- ======================= INBOX ======================= -->
+    <section class="page" id="page-inbox">
+      <div class="page-head"><h1>Inbox</h1><p>Contact form messages, and order requests split by which button the customer used. Mark things read as you handle them.</p></div>
+      <div class="card">
+        <h3>Contact messages <span id="notif-count-contact" class="badge" hidden>0</span></h3>
+        <p class="card-intro">Sent through the Contact page form.</p>
+        <div class="notif-toolbar"><label><input type="checkbox" data-select-all="contact_messages"> Select all</label><button class="btn btn-outline btn-tiny" data-mark-selected="contact_messages">Mark selected as read</button></div>
+        <div class="notif-list" id="notif-list-contact"></div>
+      </div>
+      <div class="card">
+        <h3>Orders by email <span id="notif-count-email" class="badge" hidden>0</span></h3>
+        <p class="card-intro">Submitted through the full checkout form.</p>
+        <div class="notif-toolbar"><label><input type="checkbox" data-select-all="orders-email"> Select all</label><button class="btn btn-outline btn-tiny" data-mark-selected="orders-email">Mark selected as read</button></div>
+        <div class="notif-list" id="notif-list-email"></div>
+      </div>
+      <div class="card">
+        <h3>Orders by WhatsApp <span id="notif-count-whatsapp" class="badge" hidden>0</span></h3>
+        <p class="card-intro">Submitted with the "Send Order Request by WhatsApp" button. The customer's summary was also sent to your WhatsApp.</p>
+        <div class="notif-toolbar"><label><input type="checkbox" data-select-all="orders-whatsapp"> Select all</label><button class="btn btn-outline btn-tiny" data-mark-selected="orders-whatsapp">Mark selected as read</button></div>
+        <div class="notif-list" id="notif-list-whatsapp"></div>
+      </div>
+    </section>
+
+    <!-- ======================= PRODUCTS ======================= -->
+    <section class="page" id="page-products">
+      <div class="page-head"><h1>Products</h1><p>The single source of truth for every product. Changing a price, sale or description here updates the product page, the cart and every order total going forward.</p></div>
+      <div class="card">
+        <h3>All products (<span id="products-count">0</span>)</h3>
+        <div class="toolbar"><input type="search" id="products-search" placeholder="Search products" /></div>
+        <div class="table-scroll">
+          <table class="table">
+            <thead><tr><th>#</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="products-empty" hidden>No products in the database yet. Run <code>backend/schema.sql</code> in Supabase to load the catalog.</p>
+      </div>
+      <div class="card" id="product-form-card">
+        <h3 id="product-form-title">Add a product</h3>
+        <p class="card-intro">Click Edit on a product above to load it here.</p>
+        <div class="grid-3">
+          <div class="field"><label>Product ID</label><input id="pf-id" placeholder="e.g. product-65" /><div class="help">Permanent internal ID. Changing it on an existing product creates a new one, so leave it alone once set.</div></div>
+          <div class="field"><label>Display number</label><input id="pf-number" type="number" min="1" placeholder="e.g. 65" /><div class="help">Just a label on the product page.</div></div>
+          <div class="field"><label>Category</label><select id="pf-category"></select></div>
+        </div>
+        <div class="field"><label>Name</label><input id="pf-name" placeholder="e.g. Testosterone Enanthate 250" /></div>
+        <div class="grid-4">
+          <div class="field"><label>Price ($)</label><input id="pf-price" type="number" min="0" step="1" placeholder="e.g. 60" /><div class="help">Whole dollars. Blank shows "Price TBD".</div></div>
+          <div class="field"><label>Sale price ($)</label><input id="pf-sale" type="number" min="0" step="1" placeholder="optional" /><div class="help">Shown next to the struck-through price. Must be lower than the price.</div></div>
+          <div class="field"><label>Badge</label><input id="pf-badge" maxlength="24" placeholder="e.g. New, Bestseller" /><div class="help">Small label on the photo.</div></div>
+          <div class="field"><label>Sort order</label><input id="pf-sort" type="number" step="1" placeholder="e.g. 10" /><div class="help">Lower numbers show first.</div></div>
+        </div>
+        <div class="field"><label>Tagline (shown under the name)</label><input id="pf-tagline" placeholder="One-line summary" /></div>
+        <div class="field"><label>Description</label><textarea id="pf-description" rows="4"></textarea></div>
+        <div class="field"><label>Specifications (one "Label | Value" per line)</label><textarea id="pf-specs" rows="6" placeholder="Active Compound | Testosterone Enanthate&#10;Concentration | 250 mg per mL"></textarea></div>
+        <div class="field"><label>Key features (one per line)</label><textarea id="pf-features" rows="4"></textarea></div>
+        <div class="field"><label>Quality control intro</label><input id="pf-qc-intro" /></div>
+        <div class="grid-3">
+          <div class="field"><label>QC compound</label><input id="pf-qc-compound" /></div>
+          <div class="field"><label>QC assay result</label><input id="pf-qc-assay" placeholder="e.g. 99.5% Active Compound" /></div>
+          <div class="field"><label>QC status</label><input id="pf-qc-status" placeholder="e.g. PASSED" /></div>
+        </div>
+        <div class="field">
+          <label>Product photo</label>
+          <div class="upload-field">
+            <div class="upload-preview" id="pf-image-preview">No photo</div>
+            <div class="upload-controls">
+              <input type="text" id="pf-image" placeholder="assets/images/product-placeholder.svg (or upload below)" />
+              <input type="file" id="pf-image-file" accept="image/*" />
+              <button type="button" class="btn btn-outline btn-tiny" data-upload-for="pf-image-file">Upload photo</button>
+              <span class="upload-status" id="pf-image-status"></span>
+            </div>
+          </div>
+        </div>
+        <div class="field"><label>Stock status</label><button class="stock-pill in" id="pf-stock-toggle" type="button" data-stock="in">In Stock</button></div>
+        <div class="actions-row"><button class="btn btn-red" id="pf-save" type="button">Save product</button><button class="btn btn-outline" id="pf-clear" type="button">Clear form</button></div>
+        <div class="msg" id="pf-msg"></div>
+      </div>
+    </section>
+
+    <!-- ======================= MERCH ======================= -->
+    <section class="page" id="page-merch">
+      <div class="page-head"><h1>Merch</h1><p>Apparel and accessories. Each item can have several color photos. Shoppers pick a color on the item page before adding to cart.</p></div>
+      <div class="card">
+        <h3>All merch (<span id="merch-count">0</span>)</h3>
+        <div class="table-scroll">
+          <table class="table">
+            <thead><tr><th>Name</th><th>Price</th><th>Stock</th><th></th></tr></thead>
+            <tbody id="merch-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3 id="merch-form-title">Add a merch item</h3>
+        <p class="card-intro">Click Edit on an item above to load it here.</p>
+        <div class="grid-2">
+          <div class="field"><label>Merch ID</label><input id="mf-id" placeholder="e.g. merch-hoodie" /><div class="help">Permanent internal ID. Changing it creates a new item.</div></div>
+          <div class="field"><label>Name</label><input id="mf-name" placeholder="e.g. Hoodie" /></div>
+        </div>
+        <div class="grid-4">
+          <div class="field"><label>Price ($)</label><input id="mf-price" type="number" min="0" step="1" placeholder="e.g. 50" /><div class="help">Whole dollars.</div></div>
+          <div class="field"><label>Sale price ($)</label><input id="mf-sale" type="number" min="0" step="1" placeholder="optional" /><div class="help">Must be lower than the price.</div></div>
+          <div class="field"><label>Badge</label><input id="mf-badge" maxlength="24" placeholder="e.g. New" /></div>
+          <div class="field"><label>Sort order</label><input id="mf-sort" type="number" step="1" placeholder="e.g. 10" /></div>
+        </div>
+        <div class="field"><label>Description</label><textarea id="mf-description"></textarea></div>
+        <div class="field">
+          <label>Color photos</label>
+          <div class="help" style="margin:0 0 10px;">One row per color. The first one is the card photo.</div>
+          <div class="variant-rows" id="mf-variant-rows"></div>
+          <button type="button" class="btn btn-outline btn-tiny" id="mf-variant-add">+ Add color</button>
+        </div>
+        <div class="field"><label>Stock status</label><button class="stock-pill in" id="mf-stock-toggle" type="button" data-stock="in">In Stock</button><div class="help">Turns the Add to Cart button on or off. Does not track quantity.</div></div>
+        <div class="actions-row"><button class="btn btn-red" id="mf-save" type="button">Save merch item</button><button class="btn btn-outline" id="mf-clear" type="button">Clear form</button></div>
+        <div class="msg" id="mf-msg"></div>
+      </div>
+    </section>
+
+    <!-- ======================= CATEGORIES ======================= -->
+    <section class="page" id="page-categories">
+      <div class="page-head"><h1>Categories</h1><p>The 7 categories are fixed slots. You can rename and describe each one, but not add or remove them. Renaming updates the name everywhere it is listed on the site.</p></div>
+      <div id="categories-list"></div>
+    </section>
+
+    <!-- ======================= PAYMENT METHODS ======================= -->
+    <section class="page" id="page-payments">
+      <div class="page-head"><h1>Payment Methods</h1><p>The options in the cart's payment dropdown, and what customers see once they pick one.</p></div>
+      <div class="card">
+        <h3>Methods and instructions</h3>
+        <p class="card-intro">Use the arrows to change the order. The instructions (for example your Cashapp tag or Zelle email) appear under the dropdown when the customer picks that method, on the order confirmation, and in their confirmation email. A method named "Bitcoin" automatically gets the Bitcoin discount below.</p>
+        <div class="rows" id="pay-rows"></div>
+        <button class="btn btn-outline btn-tiny" id="pay-add" type="button">+ Add method</button>
+      </div>
+      <div class="card">
+        <h3>Bitcoin discount</h3>
+        <p class="card-intro">Applied automatically at checkout when the customer picks Bitcoin.</p>
+        <div class="field" style="max-width:260px"><label>% off when paying with Bitcoin</label><input id="pay-crypto-pct" type="number" min="0" max="100" placeholder="5" /></div>
+      </div>
+      <div class="save-bar"><button class="btn btn-red" id="pay-save" type="button">Save payment settings</button><div class="msg" id="pay-msg"></div></div>
+    </section>
+
+    <!-- ======================= DISCOUNTS ======================= -->
+    <section class="page" id="page-discounts">
+      <div class="page-head"><h1>Discounts</h1><p>Real checkout math, not just display text. Changes apply to the next order immediately.</p></div>
+      <div class="card">
+        <h3>Mix &amp; Match volume discount</h3>
+        <p class="card-intro">Automatic, based on the total item count in the cart.</p>
+        <div class="section-label">Tier 1</div>
+        <div class="grid-3">
+          <div class="field"><label>Min items</label><input id="mm1-min" type="number" min="1" placeholder="3" /></div>
+          <div class="field"><label>Max items</label><input id="mm1-max" type="number" min="1" placeholder="5" /></div>
+          <div class="field"><label>% off</label><input id="mm1-pct" type="number" min="0" max="100" placeholder="5" /></div>
+        </div>
+        <hr class="divider">
+        <div class="section-label">Tier 2</div>
+        <div class="grid-3">
+          <div class="field"><label>Min items</label><input id="mm2-min" type="number" min="1" placeholder="6" /></div>
+          <div class="field"><label>Max items</label><input id="mm2-max" type="number" min="1" placeholder="9" /></div>
+          <div class="field"><label>% off</label><input id="mm2-pct" type="number" min="0" max="100" placeholder="7" /></div>
+        </div>
+        <hr class="divider">
+        <div class="section-label">Tier 3 (no maximum)</div>
+        <div class="grid-3">
+          <div class="field"><label>Min items</label><input id="mm3-min" type="number" min="1" placeholder="10" /></div>
+          <div class="field"><label>% off</label><input id="mm3-pct" type="number" min="0" max="100" placeholder="10" /></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Welcome popup code</h3>
+        <p class="card-intro">Emailed only when a visitor signs up through the welcome popup. One use per customer, first order only.</p>
+        <div class="grid-2">
+          <div class="field"><label>Code</label><input id="welcome-code" placeholder="IRONASCENSION26" /></div>
+          <div class="field"><label>% off</label><input id="welcome-pct" type="number" min="0" max="100" placeholder="10" /></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Stacking cap</h3>
+        <p class="card-intro">Mix &amp; Match, the welcome code and the Bitcoin discount can add together on one order. This is the maximum they can add up to.</p>
+        <div class="field" style="max-width:260px"><label>Maximum combined % off</label><input id="stack-cap" type="number" min="0" max="100" placeholder="30" /></div>
+      </div>
+      <div class="save-bar"><button class="btn btn-red" id="disc-save" type="button">Save discounts</button><div class="msg" id="disc-msg"></div></div>
+    </section>
+
+    <!-- ======================= SHIPPING & GIFTS ======================= -->
+    <section class="page" id="page-shipping">
+      <div class="page-head"><h1>Shipping &amp; Gifts</h1><p>Thresholds check the cart total after discounts, in whole dollars. Orders below the free shipping amount pay the flat shipping fee. Crossing the free cap amount adds a free cap at checkout.</p></div>
+      <div class="card">
+        <h3>Thresholds</h3>
+        <div class="grid-2">
+          <div class="field"><label>Shipping fee ($)</label><input id="ship-fee" type="number" min="0" step="1" placeholder="15" /></div>
+          <div class="field"><label>Free shipping from ($)</label><input id="ship-free" type="number" min="0" step="1" placeholder="150" /></div>
+          <div class="field"><label>Free cap from ($)</label><input id="gift-cap" type="number" min="0" step="1" placeholder="150" /></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Shipping note</h3>
+        <p class="card-intro">Optional short line about shipping, for example a delay or the usual dispatch time.</p>
+        <div class="field"><label>Shipping note</label><input id="shipping-note" placeholder="e.g. Ships within 2 business days" /></div>
+      </div>
+      <div class="save-bar"><button class="btn btn-red" id="ship-save" type="button">Save shipping settings</button><div class="msg" id="ship-msg"></div></div>
+    </section>
+
+    <!-- ======================= EMAILS ======================= -->
+    <section class="page" id="page-emails">
+      <div class="page-head"><h1>Emails</h1><p>The message customers see after checkout, and the optional emails you can send when you move an order to a new status. Emails need the RESEND_API_KEY set in Netlify.</p></div>
+      <div class="card">
+        <h3>Order confirmation message</h3>
+        <p class="card-intro">Shown on the confirmation screen after checkout and at the top of the customer's confirmation email. You can use {name}, {order_number} and {total}.</p>
+        <div class="field"><label>Message</label><textarea id="confirm-message" rows="4"></textarea></div>
+      </div>
+      <div class="card">
+        <h3>Order status emails</h3>
+        <p class="card-intro">When you change an order's status in Orders, the admin asks whether to email the customer. It only offers this for statuses you turn on here. Placeholders: {name}, {order_number}, {total}, {payment_method}.</p>
+        <div id="email-templates"></div>
+      </div>
+      <div class="save-bar"><button class="btn btn-red" id="email-save" type="button">Save email settings</button><div class="msg" id="email-msg"></div></div>
+    </section>
+
+    <!-- ======================= HOMEPAGE ======================= -->
+    <section class="page" id="page-homepage">
+      <div class="page-head"><h1>Homepage</h1><p>The top of the homepage, the banner above every page, and the Featured products row.</p></div>
+      <div class="card">
+        <h3>Hero</h3>
+        <p class="card-intro">Leave a field blank to use the site's built-in wording or image.</p>
+        <div class="field"><label>Headline</label><input id="hero-heading" placeholder="Built for those who ascend." /></div>
+        <div class="field"><label>Tagline</label><textarea id="hero-tagline" placeholder="One or two sentences under the headline"></textarea></div>
+        <div class="field">
+          <label>Hero image</label>
+          <div class="upload-field">
+            <div class="upload-preview" id="hero-image-preview">Default</div>
+            <div class="upload-controls">
+              <input type="text" id="hero-image" placeholder="Leave blank for the default image (or upload below)" />
+              <input type="file" id="hero-image-file" accept="image/*" />
+              <button type="button" class="btn btn-outline btn-tiny" data-upload-for="hero-image-file">Upload image</button>
+              <span class="upload-status" id="hero-image-status"></span>
+            </div>
+          </div>
+          <div class="help">A wide, dark image works best.</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Announcement banner</h3>
+        <p class="card-intro">If filled in, this one fixed message replaces the usual rotating promo messages at the top of every page. Leave blank to keep the rotating promos.</p>
+        <div class="field"><label>Announcement text</label><input id="announcement" placeholder="e.g. Free shipping on orders over $150 this weekend" /></div>
+      </div>
+      <div class="card">
+        <h3>Featured products</h3>
+        <p class="card-intro">A "Featured" row on the homepage. Leave it empty to hide the row. Use the arrows to change the order.</p>
+        <div class="rows" id="featured-rows"></div>
+        <div class="toolbar"><select id="featured-add-select"></select><button class="btn btn-outline btn-tiny" id="featured-add" type="button">+ Add to featured</button></div>
+      </div>
+      <div class="save-bar"><button class="btn btn-red" id="home-save" type="button">Save homepage</button><div class="msg" id="home-msg"></div></div>
+    </section>
+
+    <!-- ======================= FAQ ======================= -->
+    <section class="page" id="page-faq">
+      <div class="page-head"><h1>FAQ</h1><p>Questions and answers on the About page. Use {payment_methods} in an answer to insert your current payment methods automatically.</p></div>
+      <div class="card">
+        <div class="toolbar">
+          <button class="btn btn-outline btn-tiny" id="faq-defaults" type="button">Load built-in FAQ</button>
+          <span class="muted">Saving with no questions switches back to the built-in FAQ.</span>
+        </div>
+        <div class="rows" id="faq-rows"></div>
+        <button class="btn btn-outline btn-tiny" id="faq-add" type="button">+ Add question</button>
+      </div>
+      <div class="save-bar"><button class="btn btn-red" id="faq-save" type="button">Save FAQ</button><div class="msg" id="faq-msg"></div></div>
+    </section>
+
+    <!-- ======================= SHIPPING & RETURNS TEXT ======================= -->
+    <section class="page" id="page-policies">
+      <div class="page-head"><h1>Shipping &amp; Returns Text</h1><p>The body of the Shipping &amp; Returns page, written as plain text. The contact box at the bottom stays automatic.</p></div>
+      <div class="card">
+        <div class="help" style="margin:0 0 14px; font-size:.8rem;">
+          Formatting: start a line with <b>##</b> for a section heading, <b>###</b> for a sub heading, <b>-</b> for a bullet. Put <b>**double stars**</b> around words to bold them. A blank line starts a new paragraph. The first paragraph is the intro.
+        </div>
+        <div class="toolbar"><button class="btn btn-outline btn-tiny" id="policy-defaults" type="button">Load built-in text</button><span class="muted">Saving with the box empty switches back to the built-in text.</span></div>
+        <div class="field"><textarea id="policy-text" rows="26" style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size:.82rem;"></textarea></div>
+      </div>
+      <div class="save-bar"><button class="btn btn-red" id="policy-save" type="button">Save text</button><div class="msg" id="policy-msg"></div></div>
+    </section>
+
+    <!-- ======================= CONTACT & FOOTER ======================= -->
+    <section class="page" id="page-contact">
+      <div class="page-head"><h1>Contact &amp; Footer</h1><p>Used across the site: Contact page, legal pages, footer, order emails and the WhatsApp button.</p></div>
+      <div class="card">
+        <h3>Contact details</h3>
+        <div class="grid-2">
+          <div class="field"><label>Support email</label><input id="contact-email" type="email" placeholder="contact@ironascension.com" /><div class="help">Where order and contact notifications are sent, and the address shown on the site.</div></div>
+          <div class="field"><label>Phone (optional)</label><input id="contact-phone" type="tel" placeholder="+1 (423) 484-7466" /><div class="help">Shown on the Contact and legal pages. Blank shows "Coming soon".</div></div>
+        </div>
+        <div class="field"><label>Business address (optional)</label><input id="contact-address" /></div>
+        <div class="grid-2">
+          <div class="field"><label>WhatsApp number</label><input id="whatsapp-number" type="tel" placeholder="+1 (423) 484-7466" /><div class="help">Powers the WhatsApp button and the WhatsApp order button. Include the country code. Blank hides the floating button.</div></div>
+          <div class="field"><label>Working hours</label><input id="working-hours" placeholder="Mon - Fri, 8:00 AM - 6:00 PM EST" /><div class="help">Shown on the Contact and legal pages. Blank keeps the built-in hours.</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Footer</h3>
+        <div class="field"><label>Footer tagline</label><input id="footer-tagline" placeholder="Strength. Science. Discipline." /><div class="help">The line under the logo in the footer of every page.</div></div>
+      </div>
+      <div class="card">
+        <h3>Social links</h3>
+        <p class="card-intro">Only the ones you fill in show as icons in the footer.</p>
+        <div class="grid-2">
+          <div class="field"><label>Instagram URL</label><input id="social-instagram" type="url" placeholder="https://instagram.com/..." /></div>
+          <div class="field"><label>TikTok URL</label><input id="social-tiktok" type="url" placeholder="https://tiktok.com/@..." /></div>
+          <div class="field"><label>Facebook URL</label><input id="social-facebook" type="url" placeholder="https://facebook.com/..." /></div>
+          <div class="field"><label>Twitter / X URL</label><input id="social-twitter" type="url" placeholder="https://x.com/..." /></div>
+        </div>
+        <div class="field"><label>YouTube URL</label><input id="social-youtube" type="url" placeholder="https://youtube.com/@..." /></div>
+      </div>
+      <div class="save-bar"><button class="btn btn-red" id="contact-save" type="button">Save contact and footer</button><div class="msg" id="contact-msg"></div></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/product-data.js"></script>
+<script src="js/content-defaults.js"></script>
+<script>
+// Snapshot of the built-in catalog, taken before product-data.js finishes
+// its own live fetch, so the product form can pre-fill specs, features and
+// lab details for products that have nothing saved for them in the database.
+const BUILT_IN_PRODUCTS = {};
+PRODUCTS.forEach((p) => { BUILT_IN_PRODUCTS[p.id] = { ...p }; });
+
+const ADMIN_PW_KEY = "ia_admin_pw";
+const STATUSES = ["new", "contacted", "paid", "shipped", "fulfilled", "cancelled"];
+const DEFAULT_PAYMENT_METHODS = ["Bitcoin", "Cashapp", "Apple Pay", "Zelle", "Chime", "PayPal"];
+const $ = (id) => document.getElementById(id);
+
+// ---------- Helpers ----------
+function adminHeaders() {
+  return { "Content-Type": "application/json", "x-admin-password": sessionStorage.getItem(ADMIN_PW_KEY) || "" };
+}
+async function api(fn, { method = "GET", query = "", body } = {}) {
+  const res = await fetch(`/.netlify/functions/${fn}${query}`, { method, headers: adminHeaders(), body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data };
+}
+function showMsg(el, text, ok) {
+  el.textContent = text;
+  el.className = "msg show " + (ok ? "ok" : "err");
+}
+function esc(str) {
+  if (str == null) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function money(cents) {
+  return cents == null ? "TBD" : `$${Math.ceil(cents / 100).toLocaleString()}`;
+}
+const dollarsToCents = (v) => { const s = String(v).trim(); return s === "" ? null : Math.round(Math.floor(parseFloat(s)) * 100); };
+const centsToDollars = (c) => (c == null ? "" : Math.ceil(c / 100));
+const val = (id) => $(id).value.trim();
+function move(arr, i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+}
+
+// ---------- Navigation ----------
+const PAGES = [];
+document.querySelectorAll(".nav-btn[data-page]").forEach((btn) => PAGES.push({ id: btn.dataset.page, label: btn.firstChild.textContent.trim() }));
+$("mobile-nav").innerHTML = PAGES.map((p) => `<option value="${p.id}">${esc(p.label)}</option>`).join("");
+
+function showPage(id) {
+  if (!PAGES.some((p) => p.id === id)) id = "dashboard";
+  document.querySelectorAll(".page").forEach((el) => el.classList.toggle("active", el.id === "page-" + id));
+  document.querySelectorAll(".nav-btn[data-page]").forEach((b) => b.classList.toggle("active", b.dataset.page === id));
+  $("mobile-nav").value = id;
+  try { history.replaceState(null, "", "#" + id); } catch (e) { /* ignore */ }
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll(".nav-btn[data-page]").forEach((b) => b.addEventListener("click", () => showPage(b.dataset.page)));
+$("mobile-nav").addEventListener("change", (e) => showPage(e.target.value));
+document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => showPage(b.dataset.goto)));
+
+// ---------- Login ----------
+async function tryLogin(password) {
+  const res = await fetch("/.netlify/functions/admin-login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) });
+  return res.ok;
+}
+function enterApp() {
+  $("login-screen").hidden = true;
+  $("admin-app").hidden = false;
+  showPage(location.hash.replace("#", "") || "dashboard");
+  loadEverything();
+}
+$("login-btn").addEventListener("click", async () => {
+  const pw = $("login-password").value;
+  if (await tryLogin(pw)) {
+    sessionStorage.setItem(ADMIN_PW_KEY, pw);
+    enterApp();
+  } else {
+    showMsg($("login-msg"), "Incorrect password, or ADMIN_PASSWORD isn't set in Netlify yet.", false);
+  }
+});
+$("login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") $("login-btn").click(); });
+$("logout-btn").addEventListener("click", () => { sessionStorage.removeItem(ADMIN_PW_KEY); location.reload(); });
+(async () => {
+  const saved = sessionStorage.getItem(ADMIN_PW_KEY);
+  if (saved && (await tryLogin(saved))) enterApp();
+})();
+
+// ---------- Uploads ----------
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+async function uploadFile(file, folder) {
+  const contentBase64 = await fileToBase64(file);
+  const r = await api("admin-upload", { method: "POST", body: { filename: file.name, folder, contentBase64, contentType: file.type } });
+  if (!r.ok) throw new Error(r.data.error || "Upload failed");
+  return r.data.url;
+}
+const previewRefreshers = {};
+function setPreview(box, url, emptyText) {
+  if (url && /\.(jpe?g|png|webp|gif|svg)(\?.*)?$/i.test(url)) box.innerHTML = `<img src="${esc(url)}" alt="" onerror="this.parentElement.textContent='Preview unavailable'" />`;
+  else box.textContent = url ? "File set" : emptyText;
+}
+// Wires a text input + hidden file input + preview + status line.
+function wireUploadField(prefix, folder, emptyText) {
+  const text = $(prefix), file = $(prefix + "-file"), preview = $(prefix + "-preview"), status = $(prefix + "-status");
+  const refresh = () => setPreview(preview, text.value.trim(), emptyText);
+  previewRefreshers[prefix] = refresh;
+  text.addEventListener("input", refresh);
+  refresh();
+  file.addEventListener("change", async () => {
+    const f = file.files[0];
+    if (!f) return;
+    status.textContent = "Uploading...";
+    status.className = "upload-status uploading";
+    try {
+      text.value = await uploadFile(f, folder);
+      refresh();
+      status.textContent = "Uploaded";
+      status.className = "upload-status";
+    } catch (err) {
+      status.textContent = err.message || "Upload failed";
+      status.className = "upload-status error";
+    } finally {
+      file.value = "";
+    }
+  });
+}
+document.querySelectorAll("[data-upload-for]").forEach((btn) => btn.addEventListener("click", () => $(btn.dataset.uploadFor).click()));
+wireUploadField("pf-image", "products", "No photo");
+wireUploadField("hero-image", "site", "Default");
+
+// ---------- Data ----------
+let categories = [], products = [], merch = [], orders = [];
+let S = {};            // settings, camelCase
+let notifs = { contactMessages: [], ordersEmail: [], ordersWhatsapp: [] };
+
+// The admin reads the saved settings row directly (so it always shows
+// what is really in the database) and falls back to the public copy.
+function normalizeSettings(row) {
+  const r = row || {};
+  const pick = (a, b) => (r[a] !== undefined ? r[a] : r[b]);
+  const socials = r.socials || {};
+  return {
+    contactEmail: pick("contact_email", "contactEmail") || "",
+    contactPhone: pick("contact_phone", "contactPhone") || "",
+    contactAddress: pick("contact_address", "contactAddress") || "",
+    whatsappNumber: pick("whatsapp_number", "whatsappNumber") || "",
+    workingHours: pick("working_hours", "workingHours") || "",
+    footerTagline: pick("footer_tagline", "footerTagline") || "",
+    announcement: r.announcement || "",
+    shippingNote: pick("shipping_note", "shippingNote") || "",
+    heroHeading: pick("hero_heading", "heroHeading") || "",
+    heroTagline: pick("hero_tagline", "heroTagline") || "",
+    heroImageUrl: pick("hero_image_url", "heroImageUrl") || "",
+    featuredProductIds: pick("featured_product_ids", "featuredProductIds") || [],
+    socials: {
+      instagram: r.social_instagram_url || socials.instagram || "",
+      tiktok: r.social_tiktok_url || socials.tiktok || "",
+      facebook: r.social_facebook_url || socials.facebook || "",
+      twitter: r.social_twitter_url || socials.twitter || "",
+      youtube: r.social_youtube_url || socials.youtube || "",
+    },
+    mixMatchTiers: pick("mix_match_tiers", "mixMatchTiers") || [{ min: 3, max: 5, pct: 5 }, { min: 6, max: 9, pct: 7 }, { min: 10, max: null, pct: 10 }],
+    welcomeCode: pick("welcome_code", "welcomeCode") || "IRONASCENSION26",
+    welcomeDiscountPct: pick("welcome_discount_pct", "welcomeDiscountPct") ?? 10,
+    cryptoDiscountPct: pick("crypto_discount_pct", "cryptoDiscountPct") ?? 5,
+    stackCapPct: pick("stack_cap_pct", "stackCapPct") ?? 30,
+    shippingFeeCents: pick("shipping_fee_cents", "shippingFeeCents") ?? 1500,
+    freeShippingThresholdCents: pick("free_shipping_threshold_cents", "freeShippingThresholdCents") ?? 15000,
+    freeCapThresholdCents: pick("free_cap_threshold_cents", "freeCapThresholdCents") ?? 15000,
+    paymentMethods: (pick("payment_methods", "paymentMethods") || []).length ? pick("payment_methods", "paymentMethods") : DEFAULT_PAYMENT_METHODS,
+    paymentInstructions: pick("payment_instructions", "paymentInstructions") || {},
+    orderConfirmationMessage: pick("order_confirmation_message", "orderConfirmationMessage") || "",
+    emailTemplates: pick("email_templates", "emailTemplates") || {},
+    faqs: pick("faqs", "faqs") || null,
+    shippingContent: pick("shipping_content", "shippingContent") || "",
+  };
+}
+
+async function loadEverything() {
+  const [cat, set] = await Promise.all([
+    fetch("/.netlify/functions/get-catalog").then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
+    api("admin-settings").catch(() => ({ ok: false, data: {} })),
+  ]);
+  categories = cat.categories || [];
+  products = (cat.products || []).map((p) => ({ ...p, priceCents: p.price != null ? Math.round(p.price * 100) : null, salePriceCents: p.salePrice != null ? Math.round(p.salePrice * 100) : null }));
+  merch = (cat.merch || []).map((m) => ({ ...m, priceCents: m.price != null ? Math.round(m.price * 100) : null, salePriceCents: m.salePrice != null ? Math.round(m.salePrice * 100) : null }));
+  S = normalizeSettings(set.ok && set.data.settings ? set.data.settings : cat.settings);
+
+  renderCategories();
+  renderCategorySelect();
+  renderProducts();
+  renderMerch();
+  renderPayments();
+  renderDiscounts();
+  renderShipping();
+  renderEmails();
+  renderHomepage();
+  renderFaq();
+  renderPolicies();
+  renderContact();
+  renderDashboard();
+  loadOrders();
+  loadNotifications();
+}
+
+// Generic settings save: sends only this screen's fields.
+async function saveSettings(partial, msgEl) {
+  const r = await api("admin-settings", { method: "POST", body: partial });
+  if (r.ok) {
+    const { socials, ...rest } = partial;
+    Object.assign(S, rest);
+    if (socials) S.socials = { ...S.socials, ...socials };
+    showMsg(msgEl, "Saved. Live on the site within a minute.", true);
+  } else {
+    showMsg(msgEl, r.data.error || "Save failed. Is Supabase connected, and have you run the latest schema.sql?", false);
+  }
+  return r.ok;
+}
+
+// =====================================================================
+// OVERVIEW
+// =====================================================================
+function renderDashboard() {
+  $("stat-new").textContent = orders.filter((o) => o.status === "new").length;
+  const unread = notifs.contactMessages.filter((r) => !r.read).length + notifs.ordersEmail.filter((r) => !r.read).length + notifs.ordersWhatsapp.filter((r) => !r.read).length;
+  $("stat-unread").textContent = unread;
+  $("stat-products").textContent = products.length;
+  $("stat-merch").textContent = merch.length;
+  const recent = orders.slice(0, 5);
+  $("dash-recent").innerHTML = recent.length
+    ? `<div class="table-scroll"><table class="table"><tbody>${recent.map((o) => `<tr>
+        <td><b>${esc(o.order_number)}</b><br><span class="muted">${new Date(o.created_at).toLocaleString()}</span></td>
+        <td>${esc(o.customer_name || o.customer_email || o.customer_phone || "-")}</td>
+        <td>${money(o.total_cents ?? o.subtotal_cents)}</td>
+        <td><span class="tag">${esc(o.status)}</span></td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="empty">No orders yet.</p>`;
+}
+
+// =====================================================================
+// ORDERS
+// =====================================================================
+async function loadOrders() {
+  const r = await api("admin-orders").catch(() => ({ ok: false, data: {} }));
+  orders = r.ok ? (r.data.orders || []) : [];
+  if (!r.ok) showMsg($("orders-msg"), r.data.error || "Could not load orders.", false);
+  renderOrders();
+  renderDashboard();
+}
+function renderOrders() {
+  const filter = $("orders-filter").value;
+  const q = $("orders-search").value.trim().toLowerCase();
+  const rows = orders.filter((o) => (!filter || o.status === filter) &&
+    (!q || [o.order_number, o.customer_name, o.customer_email, o.customer_phone].some((v) => String(v || "").toLowerCase().includes(q))));
+  $("orders-tbody").innerHTML = rows.length ? rows.map((o) => {
+    const gifts = (o.gift_items || []).map((g) => `${g.name}${g.color ? " (" + g.color + (g.size ? ", " + g.size : "") + ")" : ""}`).join(", ");
+    const details = [
+      o.shipping_address ? `Address: ${o.shipping_address}` : null,
+      o.notes ? `Notes: ${o.notes}` : null,
+      o.discount_label ? `Discount: ${o.discount_label} (${money(o.discount_cents)} off)` : null,
+      gifts ? `Free gifts: ${gifts}` : null,
+      o.shipping_cents != null ? `Shipping: ${o.shipping_free ? "Free" : money(o.shipping_cents)}` : (o.shipping_free ? "Shipping: Free" : null),
+      o.contact_preference ? `Contact by: ${o.contact_preference}` : null,
+    ].filter(Boolean).join("\n");
+    return `<tr>
+      <td><b>${esc(o.order_number)}</b><br><span class="muted">${new Date(o.created_at).toLocaleString()}</span><br><span class="muted">${o.channel === "whatsapp" ? "WhatsApp" : "Email"}</span></td>
+      <td>${esc(o.customer_name || "-")}<br><span class="muted">${esc(o.customer_email || "-")}</span>${o.customer_phone ? `<br><span class="muted">${esc(o.customer_phone)}</span>` : ""}${o.contact_preference ? `<br><span class="tag">Contact: ${esc(o.contact_preference)}</span>` : ""}</td>
+      <td><ul class="items-list">${(o.items || []).map((it) => `<li>${esc(it.name)} &times; ${it.qty}</li>`).join("")}</ul>${details ? `<details class="more"><summary>Details</summary><div>${esc(details)}</div></details>` : ""}</td>
+      <td>${money(o.total_cents ?? o.subtotal_cents)}</td>
+      <td>${esc(o.payment_method || "-")}${o.promo_code ? `<br><span class="muted">Code: ${esc(o.promo_code)}</span>` : ""}</td>
+      <td><select class="status-select" data-order-status="${o.id}" data-prev="${o.status}">${STATUSES.map((s) => `<option value="${s}" ${s === o.status ? "selected" : ""}>${s}</option>`).join("")}</select></td>
+      <td><button class="btn btn-outline btn-tiny btn-danger" data-delete-order="${o.id}">Delete</button></td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="7" class="muted">No orders${filter || q ? " match" : " yet"}.</td></tr>`;
+}
+$("orders-refresh").addEventListener("click", loadOrders);
+$("orders-filter").addEventListener("change", renderOrders);
+$("orders-search").addEventListener("input", renderOrders);
+$("orders-tbody").addEventListener("change", async (e) => {
+  const id = e.target.dataset.orderStatus;
+  if (!id) return;
+  const order = orders.find((o) => o.id === id);
+  const status = e.target.value;
+  const tpl = S.emailTemplates && S.emailTemplates[status];
+  let notify = false;
+  if (order && order.customer_email && tpl && tpl.enabled && tpl.body) {
+    notify = confirm(`Mark as "${status}" and email ${order.customer_email} the "${status}" update?\n\nOK = update and send email\nCancel = update without emailing`);
+  }
+  const r = await api("admin-orders", { method: "PATCH", query: `?id=${encodeURIComponent(id)}`, body: { status, notify } });
+  const msg = $("orders-msg");
+  if (r.ok) {
+    if (order) order.status = status;
+    e.target.dataset.prev = status;
+    showMsg(msg, notify ? `Status updated. Email: ${r.data.email || "not sent"}.` : "Status updated.", true);
+    renderDashboard();
+  } else {
+    e.target.value = e.target.dataset.prev;
+    showMsg(msg, r.data.error || "Could not update the status.", false);
+  }
+});
+$("orders-tbody").addEventListener("click", async (e) => {
+  const id = e.target.dataset.deleteOrder;
+  if (!id || !confirm("Delete this order? This can't be undone.")) return;
+  await api("admin-orders", { method: "DELETE", query: `?id=${encodeURIComponent(id)}` });
+  loadOrders();
+  loadNotifications();
+});
+
+// =====================================================================
+// INBOX
+// =====================================================================
+async function loadNotifications() {
+  const r = await api("admin-notifications").catch(() => ({ ok: false, data: {} }));
+  const d = r.ok ? r.data : {};
+  notifs = { contactMessages: d.contactMessages || [], ordersEmail: d.ordersEmail || [], ordersWhatsapp: d.ordersWhatsapp || [] };
+  renderInbox();
+  renderDashboard();
+}
+function orderNotifDetail(o) {
+  const items = (o.items || []).map((it) => `${it.name} x${it.qty}`).join(", ");
+  return [
+    o.customer_name ? `From: ${esc(o.customer_name)}` : null,
+    o.customer_email ? `Email: ${esc(o.customer_email)}` : null,
+    o.customer_phone ? `Phone: ${esc(o.customer_phone)}` : null,
+    o.contact_preference ? `Contact by: ${esc(o.contact_preference)}` : null,
+    `Items: ${esc(items || "-")}`,
+    o.shipping_cents != null ? `Shipping: ${o.shipping_free ? "Free" : money(o.shipping_cents)}` : null,
+    `Total: ${money(o.total_cents)}`,
+    o.payment_method ? `Payment: ${esc(o.payment_method)}` : null,
+    o.promo_code ? `Promo: ${esc(o.promo_code)}` : null,
+  ].filter(Boolean).join("\n");
+}
+function renderInboxList(containerId, rows, kind) {
+  const el = $(containerId);
+  if (!rows.length) { el.innerHTML = `<p class="empty">Nothing here yet.</p>`; return; }
+  el.innerHTML = rows.map((row) => {
+    const read = row.read === true;
+    const title = kind === "contact" ? esc(row.name || row.email || "Anonymous") : `${esc(row.order_number)} - ${esc(row.customer_name || row.customer_email || row.customer_phone || "Customer")}`;
+    const detail = kind === "contact" ? esc(row.message || "") : orderNotifDetail(row);
+    return `<div class="notif-row ${read ? "" : "unread"}">
+      <input type="checkbox" data-notif-checkbox="${row.id}">
+      <div class="notif-body">
+        <div class="notif-top"><span class="notif-title">${read ? "" : '<span class="notif-dot"></span>'}${title}</span><span class="notif-date">${new Date(row.created_at).toLocaleString()}</span></div>
+        <div class="notif-detail">${detail}</div>
+        <button type="button" class="notif-btn" data-notif-toggle="${row.id}">${read ? "Mark as unread" : "Mark as read"}</button>
+        <button type="button" class="notif-btn" data-notif-delete="${row.id}" style="margin-left:14px;">Delete</button>
+      </div></div>`;
+  }).join("");
+}
+function renderInbox() {
+  renderInboxList("notif-list-contact", notifs.contactMessages, "contact");
+  renderInboxList("notif-list-email", notifs.ordersEmail, "order");
+  renderInboxList("notif-list-whatsapp", notifs.ordersWhatsapp, "order");
+  const unread = (rows) => rows.filter((r) => !r.read).length;
+  const counts = { contact: unread(notifs.contactMessages), email: unread(notifs.ordersEmail), whatsapp: unread(notifs.ordersWhatsapp) };
+  Object.keys(counts).forEach((k) => { const b = $(`notif-count-${k}`); b.textContent = counts[k]; b.hidden = counts[k] === 0; });
+  const total = counts.contact + counts.email + counts.whatsapp;
+  $("inbox-badge").textContent = total;
+  $("inbox-badge").hidden = total === 0;
+  document.querySelectorAll("[data-select-all]").forEach((cb) => (cb.checked = false));
+}
+const groupTable = (g) => (g === "contact_messages" ? "contact_messages" : "orders");
+const groupRows = (g) => (g === "contact_messages" ? notifs.contactMessages : g === "orders-email" ? notifs.ordersEmail : notifs.ordersWhatsapp);
+const groupList = (g) => (g === "contact_messages" ? "notif-list-contact" : g === "orders-email" ? "notif-list-email" : "notif-list-whatsapp");
+async function markRead(table, ids, read) {
+  if (!ids.length) return;
+  await api("admin-notifications", { method: "PATCH", body: { table, ids, read } });
+  [...notifs.contactMessages, ...notifs.ordersEmail, ...notifs.ordersWhatsapp].forEach((row) => { if (ids.includes(row.id)) row.read = read; });
+  renderInbox();
+  renderDashboard();
+}
+document.querySelectorAll("[data-select-all]").forEach((cb) => cb.addEventListener("change", () => {
+  document.querySelectorAll(`#${groupList(cb.dataset.selectAll)} [data-notif-checkbox]`).forEach((c) => (c.checked = cb.checked));
+}));
+document.querySelectorAll("[data-mark-selected]").forEach((btn) => btn.addEventListener("click", () => {
+  const g = btn.dataset.markSelected;
+  const ids = Array.from(document.querySelectorAll(`#${groupList(g)} [data-notif-checkbox]:checked`)).map((c) => c.dataset.notifCheckbox);
+  markRead(groupTable(g), ids, true);
+}));
+[["notif-list-contact", "contact_messages"], ["notif-list-email", "orders-email"], ["notif-list-whatsapp", "orders-whatsapp"]].forEach(([listId, g]) => {
+  $(listId).addEventListener("click", async (e) => {
+    const toggleId = e.target.dataset.notifToggle;
+    if (toggleId) {
+      const row = groupRows(g).find((r) => r.id === toggleId);
+      if (row) markRead(groupTable(g), [toggleId], !row.read);
+      return;
+    }
+    const delId = e.target.dataset.notifDelete;
+    if (delId && confirm("Delete this? This can't be undone.")) {
+      await api("admin-notifications", { method: "DELETE", query: `?table=${groupTable(g)}&id=${encodeURIComponent(delId)}` });
+      ["contactMessages", "ordersEmail", "ordersWhatsapp"].forEach((k) => (notifs[k] = notifs[k].filter((r) => r.id !== delId)));
+      renderInbox();
+      renderDashboard();
+      if (g !== "contact_messages") loadOrders();
+    }
+  });
+});
+
+// =====================================================================
+// CATEGORIES
+// =====================================================================
+function renderCategories() {
+  $("categories-list").innerHTML = categories.length ? categories.map((c) => `
+    <div class="card" data-category-number="${c.number}">
+      <h3>Category ${c.number}</h3>
+      <div class="grid-2">
+        <div class="field"><label>Name</label><input class="cf-name" value="${esc(c.name || "")}" /></div>
+        <div class="field"><label>Blurb</label><input class="cf-blurb" value="${esc(c.blurb || "")}" /></div>
+      </div>
+      <button class="btn btn-red btn-tiny" type="button" data-save-category="${c.number}">Save</button>
+      <div class="msg" id="cf-msg-${c.number}"></div>
+    </div>`).join("") : `<div class="card"><p class="empty">No categories in the database yet. Run backend/schema.sql in Supabase.</p></div>`;
+}
+$("categories-list").addEventListener("click", async (e) => {
+  const num = e.target.dataset.saveCategory;
+  if (!num) return;
+  const card = e.target.closest(".card");
+  const name = card.querySelector(".cf-name").value.trim();
+  const blurb = card.querySelector(".cf-blurb").value.trim();
+  const msg = $(`cf-msg-${num}`);
+  const r = await api("admin-catalog", { method: "POST", body: { type: "category", number: Number(num), name, blurb } });
+  if (r.ok) {
+    showMsg(msg, "Saved.", true);
+    const cat = categories.find((c) => c.number === Number(num));
+    if (cat) { cat.name = name; cat.blurb = blurb; }
+    renderCategorySelect();
+    renderProducts();
+  } else showMsg(msg, r.data.error || "Save failed.", false);
+});
+function renderCategorySelect() {
+  const sel = $("pf-category");
+  const current = sel.value;
+  sel.innerHTML = categories.map((c) => `<option value="${c.number}">${esc(c.name)} (Category ${c.number})</option>`).join("");
+  if (current) sel.value = current;
+}
+
+// =====================================================================
+// PRODUCTS
+// =====================================================================
+function priceCell(p) {
+  const sale = p.salePriceCents != null && p.priceCents != null && p.salePriceCents < p.priceCents;
+  return sale ? `<s class="muted">${money(p.priceCents)}</s> <b>${money(p.salePriceCents)}</b> <span class="tag sale">Sale</span>` : money(p.priceCents);
+}
+function renderProducts() {
+  $("products-count").textContent = products.length;
+  $("products-empty").hidden = products.length > 0;
+  const q = $("products-search").value.trim().toLowerCase();
+  $("products-tbody").innerHTML = products
+    .filter((p) => !q || `${p.name} ${p.id} ${p.badge || ""}`.toLowerCase().includes(q))
+    .slice().sort((a, b) => (a.number || 0) - (b.number || 0))
+    .map((p) => {
+      const inStock = p.inStock !== false;
+      const cat = categories.find((c) => c.number === p.categoryNumber);
+      return `<tr>
+        <td>${p.number ?? "-"}</td>
+        <td>${esc(p.name)}${p.badge ? ` <span class="tag">${esc(p.badge)}</span>` : ""}</td>
+        <td>${cat ? esc(cat.name) : "-"}</td>
+        <td>${priceCell(p)}</td>
+        <td><button class="stock-pill ${inStock ? "in" : "out"}" data-toggle-stock="${esc(p.id)}">${inStock ? "In Stock" : "Out of Stock"}</button></td>
+        <td><button class="btn btn-outline btn-tiny" data-edit-product="${esc(p.id)}">Edit</button> <button class="btn btn-outline btn-tiny btn-danger" data-delete-product="${esc(p.id)}">Delete</button></td>
+      </tr>`;
+    }).join("");
+}
+$("products-search").addEventListener("input", renderProducts);
+
+const specsToText = (specs) => (Array.isArray(specs) ? specs.map((s) => `${s.label} | ${s.value}`).join("\n") : "");
+const textToSpecs = (text) => text.split("\n").map((l) => l.trim()).filter(Boolean).map((line) => {
+  const [label, ...rest] = line.split("|");
+  return { label: (label || "").trim(), value: rest.join("|").trim() };
+});
+function setStockButton(btn, inStock) {
+  btn.dataset.stock = inStock ? "in" : "out";
+  btn.textContent = inStock ? "In Stock" : "Out of Stock";
+  btn.className = "stock-pill " + (inStock ? "in" : "out");
+}
+function loadProductIntoForm(p) {
+  if (!p) return;
+  const b = BUILT_IN_PRODUCTS[p.id] || {};
+  const pickv = (k) => (p[k] != null && p[k] !== "" ? p[k] : b[k]);   // fall back to the built-in copy
+  $("product-form-title").textContent = `Editing: ${p.name}`;
+  $("pf-id").value = p.id || "";
+  $("pf-number").value = p.number || "";
+  $("pf-category").value = p.categoryNumber || "";
+  $("pf-name").value = p.name || "";
+  $("pf-price").value = centsToDollars(p.priceCents);
+  $("pf-sale").value = centsToDollars(p.salePriceCents);
+  $("pf-badge").value = p.badge || "";
+  $("pf-sort").value = p.sortOrder ?? "";
+  $("pf-tagline").value = pickv("tagline") || "";
+  $("pf-description").value = pickv("description") || "";
+  $("pf-specs").value = specsToText(pickv("specs"));
+  $("pf-features").value = Array.isArray(pickv("features")) ? pickv("features").join("\n") : "";
+  $("pf-qc-intro").value = pickv("qcIntro") || "";
+  $("pf-qc-compound").value = pickv("qcCompound") || "";
+  $("pf-qc-assay").value = pickv("qcAssayResult") || "";
+  $("pf-qc-status").value = pickv("qcStatus") || "";
+  $("pf-image").value = pickv("image") || "";
+  setStockButton($("pf-stock-toggle"), p.inStock !== false);
+  previewRefreshers["pf-image"]();
+  $("product-form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function clearProductForm() {
+  $("product-form-title").textContent = "Add a product";
+  ["pf-id", "pf-number", "pf-name", "pf-price", "pf-sale", "pf-badge", "pf-sort", "pf-tagline", "pf-description", "pf-specs", "pf-features", "pf-qc-intro", "pf-qc-compound", "pf-qc-assay", "pf-qc-status", "pf-image"].forEach((id) => ($(id).value = ""));
+  setStockButton($("pf-stock-toggle"), true);
+  previewRefreshers["pf-image"]();
+}
+async function saveProductRow(p) {
+  return api("admin-catalog", {
+    method: "POST",
+    body: {
+      type: "product", id: p.id, number: p.number, name: p.name, categoryNumber: p.categoryNumber,
+      priceCents: p.priceCents, salePriceCents: p.salePriceCents, badge: p.badge, sortOrder: p.sortOrder,
+      tagline: p.tagline, description: p.description, specs: p.specs, features: p.features,
+      qcIntro: p.qcIntro, qcCompound: p.qcCompound, qcAssayResult: p.qcAssayResult, qcStatus: p.qcStatus,
+      image: p.image, inStock: p.inStock,
+    },
+  });
+}
+$("products-tbody").addEventListener("click", async (e) => {
+  const editId = e.target.dataset.editProduct, delId = e.target.dataset.deleteProduct, toggleId = e.target.dataset.toggleStock;
+  if (editId) loadProductIntoForm(products.find((p) => p.id === editId));
+  if (toggleId) {
+    const p = products.find((x) => x.id === toggleId);
+    if (!p) return;
+    const next = !(p.inStock !== false);
+    // Send only what changes so nothing else on the product is touched.
+    const r = await api("admin-catalog", { method: "POST", body: { type: "product", id: p.id, name: p.name, number: p.number, categoryNumber: p.categoryNumber, priceCents: p.priceCents, tagline: p.tagline, description: p.description, image: p.image, inStock: next } });
+    if (r.ok) { p.inStock = next; renderProducts(); }
+  }
+  if (delId) {
+    if (!confirm(`Delete "${delId}"? This can't be undone.`)) return;
+    await api("admin-catalog", { method: "DELETE", query: `?type=product&id=${encodeURIComponent(delId)}` });
+    products = products.filter((p) => p.id !== delId);
+    renderProducts();
+    renderHomepage();
+  }
+});
+$("pf-stock-toggle").addEventListener("click", (e) => setStockButton(e.target, e.target.dataset.stock !== "in"));
+$("pf-clear").addEventListener("click", clearProductForm);
+$("pf-save").addEventListener("click", async () => {
+  const msg = $("pf-msg");
+  const priceCents = dollarsToCents($("pf-price").value);
+  const salePriceCents = dollarsToCents($("pf-sale").value);
+  if (salePriceCents != null && (priceCents == null || salePriceCents >= priceCents)) {
+    showMsg(msg, "The sale price must be lower than the regular price.", false);
+    return;
+  }
+  const featuresText = val("pf-features");
+  const p = {
+    id: val("pf-id"), number: parseInt($("pf-number").value, 10) || null, categoryNumber: parseInt($("pf-category").value, 10) || null,
+    name: val("pf-name"), priceCents, salePriceCents, badge: val("pf-badge"),
+    sortOrder: $("pf-sort").value.trim() === "" ? null : Number($("pf-sort").value),
+    tagline: val("pf-tagline"), description: val("pf-description"), specs: textToSpecs($("pf-specs").value),
+    features: featuresText ? featuresText.split("\n").map((l) => l.trim()).filter(Boolean) : [],
+    qcIntro: val("pf-qc-intro"), qcCompound: val("pf-qc-compound"), qcAssayResult: val("pf-qc-assay"), qcStatus: val("pf-qc-status"),
+    image: val("pf-image"), inStock: $("pf-stock-toggle").dataset.stock === "in",
+  };
+  if (!p.id || !p.name) { showMsg(msg, "Product ID and name are required.", false); return; }
+  const r = await saveProductRow(p);
+  if (r.ok) {
+    showMsg(msg, "Saved. Live on the site within a minute.", true);
+    const cat = categories.find((c) => c.number === p.categoryNumber);
+    const merged = { ...p, categoryName: cat ? cat.name : null, categoryId: cat ? cat.id : null };
+    const idx = products.findIndex((x) => x.id === p.id);
+    if (idx >= 0) products[idx] = merged; else products.push(merged);
+    renderProducts();
+    renderHomepage();
+    renderDashboard();
+  } else showMsg(msg, r.data.error || "Save failed. Have you run the latest schema.sql in Supabase?", false);
+});
+
+// =====================================================================
+// MERCH
+// =====================================================================
+function createVariantRow(name, image) {
+  const row = document.createElement("div");
+  row.className = "variant-row";
+  row.innerHTML = `
+    <div class="upload-preview v-preview">No photo</div>
+    <input type="text" class="v-name" placeholder="Color name, e.g. Black" value="${esc(name || "")}">
+    <input type="text" class="v-image" placeholder="assets/images/merch/...jpg (or upload)" value="${esc(image || "")}">
+    <input type="file" class="v-file" accept="image/*" hidden>
+    <button type="button" class="btn btn-outline btn-tiny" data-action="upload">Upload</button>
+    <button type="button" class="variant-remove-btn" data-action="remove">Remove</button>`;
+  const preview = row.querySelector(".v-preview"), imageInput = row.querySelector(".v-image"), fileInput = row.querySelector(".v-file");
+  const refresh = () => setPreview(preview, imageInput.value.trim(), "No photo");
+  imageInput.addEventListener("input", refresh);
+  refresh();
+  row.querySelector('[data-action="upload"]').addEventListener("click", () => fileInput.click());
+  row.querySelector('[data-action="remove"]').addEventListener("click", () => row.remove());
+  fileInput.addEventListener("change", async () => {
+    const f = fileInput.files[0];
+    if (!f) return;
+    const btn = row.querySelector('[data-action="upload"]');
+    const label = btn.textContent;
+    btn.textContent = "Uploading...";
+    try { imageInput.value = await uploadFile(f, "merch"); refresh(); }
+    catch (err) { showMsg($("mf-msg"), err.message || "Upload failed", false); }
+    finally { btn.textContent = label; fileInput.value = ""; }
+  });
+  return row;
+}
+function setVariantRows(colors) {
+  const box = $("mf-variant-rows");
+  box.innerHTML = "";
+  (colors && colors.length ? colors : [{ name: "", image: "" }]).forEach((c) => box.appendChild(createVariantRow(c.name, c.image)));
+}
+const getVariantRows = () => Array.from(document.querySelectorAll("#mf-variant-rows .variant-row"))
+  .map((row) => ({ name: row.querySelector(".v-name").value.trim(), image: row.querySelector(".v-image").value.trim() }))
+  .filter((c) => c.name && c.image);
+$("mf-variant-add").addEventListener("click", () => $("mf-variant-rows").appendChild(createVariantRow("", "")));
+setVariantRows([]);
+
+function renderMerch() {
+  $("merch-count").textContent = merch.length;
+  $("merch-tbody").innerHTML = merch.map((m) => {
+    const inStock = m.inStock !== false;
+    const n = m.colors ? m.colors.length : 0;
+    return `<tr>
+      <td>${esc(m.name)}${m.badge ? ` <span class="tag">${esc(m.badge)}</span>` : ""}<br><span class="muted">${n} color${n === 1 ? "" : "s"}</span></td>
+      <td>${priceCell(m)}</td>
+      <td><button class="stock-pill ${inStock ? "in" : "out"}" data-toggle-mstock="${esc(m.id)}">${inStock ? "In Stock" : "Out of Stock"}</button></td>
+      <td><button class="btn btn-outline btn-tiny" data-edit-merch="${esc(m.id)}">Edit</button> <button class="btn btn-outline btn-tiny btn-danger" data-delete-merch="${esc(m.id)}">Delete</button></td>
+    </tr>`;
+  }).join("");
+}
+function loadMerchIntoForm(m) {
+  if (!m) return;
+  $("merch-form-title").textContent = `Editing: ${m.name}`;
+  $("mf-id").value = m.id || "";
+  $("mf-name").value = m.name || "";
+  $("mf-price").value = centsToDollars(m.priceCents);
+  $("mf-sale").value = centsToDollars(m.salePriceCents);
+  $("mf-badge").value = m.badge || "";
+  $("mf-sort").value = m.sortOrder ?? "";
+  $("mf-description").value = m.description || "";
+  setVariantRows(m.colors || []);
+  setStockButton($("mf-stock-toggle"), m.inStock !== false);
+  $("merch-form-title").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+async function saveMerchRow(item) {
+  return api("admin-catalog", { method: "POST", body: { type: "merch", id: item.id, name: item.name, priceCents: item.priceCents, salePriceCents: item.salePriceCents, badge: item.badge, sortOrder: item.sortOrder, description: item.description, image: item.image, colors: item.colors, inStock: item.inStock } });
+}
+$("merch-tbody").addEventListener("click", async (e) => {
+  const editId = e.target.dataset.editMerch, delId = e.target.dataset.deleteMerch, toggleId = e.target.dataset.toggleMstock;
+  if (editId) loadMerchIntoForm(merch.find((m) => m.id === editId));
+  if (toggleId) {
+    const m = merch.find((x) => x.id === toggleId);
+    if (!m) return;
+    const next = !(m.inStock !== false);
+    const r = await api("admin-catalog", { method: "POST", body: { type: "merch", id: m.id, name: m.name, priceCents: m.priceCents, description: m.description, image: m.image, inStock: next } });
+    if (r.ok) { m.inStock = next; renderMerch(); }
+  }
+  if (delId) {
+    if (!confirm(`Delete "${delId}"? This can't be undone.`)) return;
+    await api("admin-catalog", { method: "DELETE", query: `?type=merch&id=${encodeURIComponent(delId)}` });
+    merch = merch.filter((m) => m.id !== delId);
+    renderMerch();
+    renderHomepage();
+  }
+});
+$("mf-stock-toggle").addEventListener("click", (e) => setStockButton(e.target, e.target.dataset.stock !== "in"));
+$("mf-clear").addEventListener("click", () => {
+  $("merch-form-title").textContent = "Add a merch item";
+  ["mf-id", "mf-name", "mf-price", "mf-sale", "mf-badge", "mf-sort", "mf-description"].forEach((id) => ($(id).value = ""));
+  setVariantRows([]);
+  setStockButton($("mf-stock-toggle"), true);
+});
+$("mf-save").addEventListener("click", async () => {
+  const msg = $("mf-msg");
+  const priceCents = dollarsToCents($("mf-price").value);
+  const salePriceCents = dollarsToCents($("mf-sale").value);
+  if (salePriceCents != null && (priceCents == null || salePriceCents >= priceCents)) {
+    showMsg(msg, "The sale price must be lower than the regular price.", false);
+    return;
+  }
+  const colors = getVariantRows();
+  const item = {
+    id: val("mf-id"), name: val("mf-name"), priceCents, salePriceCents, badge: val("mf-badge"),
+    sortOrder: $("mf-sort").value.trim() === "" ? null : Number($("mf-sort").value),
+    description: val("mf-description"), image: colors[0] ? colors[0].image : null, colors,
+    inStock: $("mf-stock-toggle").dataset.stock === "in",
+  };
+  if (!item.id || !item.name) { showMsg(msg, "Merch ID and name are required.", false); return; }
+  const r = await saveMerchRow(item);
+  if (r.ok) {
+    showMsg(msg, "Saved. Live on the site within a minute.", true);
+    const idx = merch.findIndex((m) => m.id === item.id);
+    if (idx >= 0) merch[idx] = item; else merch.push(item);
+    renderMerch();
+    renderHomepage();
+    renderDashboard();
+  } else showMsg(msg, r.data.error || "Save failed. Have you run the latest schema.sql in Supabase?", false);
+});
+
+// =====================================================================
+// PAYMENT METHODS
+// =====================================================================
+let payRows = [];   // [{ name, instructions }]
+function renderPayments() {
+  payRows = S.paymentMethods.map((m) => ({ name: m, instructions: (S.paymentInstructions || {})[m] || "" }));
+  $("pay-crypto-pct").value = S.cryptoDiscountPct;
+  drawPayRows();
+}
+function drawPayRows() {
+  $("pay-rows").innerHTML = payRows.map((r, i) => `
+    <div class="row-item">
+      <div class="row-top">
+        <input data-pay-name="${i}" value="${esc(r.name)}" placeholder="Method name, e.g. Zelle" />
+        <button class="icon-btn" data-pay-up="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move up">&uarr;</button>
+        <button class="icon-btn" data-pay-down="${i}" ${i === payRows.length - 1 ? "disabled" : ""} aria-label="Move down">&darr;</button>
+        <button class="icon-btn remove" data-pay-remove="${i}" aria-label="Remove">&times;</button>
+      </div>
+      <textarea data-pay-instr="${i}" placeholder="How to pay with this method, e.g. Send to $YourCashTag and put your order number in the note.">${esc(r.instructions)}</textarea>
+    </div>`).join("");
+}
+$("pay-rows").addEventListener("input", (e) => {
+  if (e.target.dataset.payName != null) payRows[e.target.dataset.payName].name = e.target.value;
+  if (e.target.dataset.payInstr != null) payRows[e.target.dataset.payInstr].instructions = e.target.value;
+});
+$("pay-rows").addEventListener("click", (e) => {
+  const d = e.target.dataset;
+  if (d.payUp != null) move(payRows, Number(d.payUp), -1);
+  else if (d.payDown != null) move(payRows, Number(d.payDown), 1);
+  else if (d.payRemove != null) payRows.splice(Number(d.payRemove), 1);
+  else return;
+  drawPayRows();
+});
+$("pay-add").addEventListener("click", () => { payRows.push({ name: "", instructions: "" }); drawPayRows(); });
+$("pay-save").addEventListener("click", async () => {
+  const msg = $("pay-msg");
+  const seen = new Set();
+  const clean = payRows.map((r) => ({ name: r.name.trim(), instructions: r.instructions.trim() })).filter((r) => r.name && !seen.has(r.name.toLowerCase()) && seen.add(r.name.toLowerCase()));
+  if (!clean.length) { showMsg(msg, "Add at least one payment method.", false); return; }
+  const paymentInstructions = {};
+  clean.forEach((r) => { if (r.instructions) paymentInstructions[r.name] = r.instructions; });
+  const ok = await saveSettings({ paymentMethods: clean.map((r) => r.name), paymentInstructions, cryptoDiscountPct: Number($("pay-crypto-pct").value) || 0 }, msg);
+  if (ok) renderPayments();
+});
+
+// =====================================================================
+// DISCOUNTS
+// =====================================================================
+function renderDiscounts() {
+  const t = S.mixMatchTiers;
+  $("mm1-min").value = t[0] ? t[0].min : 3; $("mm1-max").value = t[0] ? t[0].max : 5; $("mm1-pct").value = t[0] ? t[0].pct : 5;
+  $("mm2-min").value = t[1] ? t[1].min : 6; $("mm2-max").value = t[1] ? t[1].max : 9; $("mm2-pct").value = t[1] ? t[1].pct : 7;
+  $("mm3-min").value = t[2] ? t[2].min : 10; $("mm3-pct").value = t[2] ? t[2].pct : 10;
+  $("welcome-code").value = S.welcomeCode;
+  $("welcome-pct").value = S.welcomeDiscountPct;
+  $("stack-cap").value = S.stackCapPct;
+}
+$("disc-save").addEventListener("click", () => {
+  const n = (id, fb) => Number($(id).value) || fb;
+  saveSettings({
+    mixMatchTiers: [
+      { min: n("mm1-min", 3), max: n("mm1-max", 5), pct: n("mm1-pct", 0) },
+      { min: n("mm2-min", 6), max: n("mm2-max", 9), pct: n("mm2-pct", 0) },
+      { min: n("mm3-min", 10), max: null, pct: n("mm3-pct", 0) },
+    ],
+    welcomeCode: val("welcome-code") || "IRONASCENSION26",
+    welcomeDiscountPct: n("welcome-pct", 0),
+    stackCapPct: n("stack-cap", 0),
+  }, $("disc-msg"));
+});
+
+// =====================================================================
+// SHIPPING & GIFTS
+// =====================================================================
+function renderShipping() {
+  $("gift-cap").value = centsToDollars(S.freeCapThresholdCents);
+  $("ship-fee").value = centsToDollars(S.shippingFeeCents);
+  $("ship-free").value = centsToDollars(S.freeShippingThresholdCents);
+  $("shipping-note").value = S.shippingNote;
+}
+$("ship-save").addEventListener("click", () => {
+  const cap = Math.floor(Number($("gift-cap").value) || 150) * 100;
+  const feeRaw = $("ship-fee").value;
+  const fee = (feeRaw === "" ? 15 : Math.max(0, Math.floor(Number(feeRaw) || 0))) * 100;
+  const free = Math.floor(Number($("ship-free").value) || 150) * 100;
+  saveSettings({ shippingFeeCents: fee, freeShippingThresholdCents: free, freeCapThresholdCents: cap, shippingNote: val("shipping-note") }, $("ship-msg"));
+});
+
+// =====================================================================
+// EMAILS
+// =====================================================================
+const TEMPLATE_STATUSES = [
+  ["contacted", "Contacted", "When you have reached out to the customer."],
+  ["paid", "Paid", "When you have received their payment."],
+  ["shipped", "Shipped", "When the order has been dispatched."],
+  ["fulfilled", "Fulfilled", "When the order is complete."],
+  ["cancelled", "Cancelled", "When an order is cancelled."],
+];
+function renderEmails() {
+  $("confirm-message").value = S.orderConfirmationMessage || DEFAULT_CONFIRMATION_MESSAGE;
+  $("email-templates").innerHTML = TEMPLATE_STATUSES.map(([key, label, when]) => {
+    const t = (S.emailTemplates || {})[key] || DEFAULT_EMAIL_TEMPLATES[key];
+    return `<div class="template-card" data-template="${key}">
+      <h4>${label} <label class="switch"><input type="checkbox" class="tpl-enabled" ${t.enabled ? "checked" : ""}> Offer to email customer</label></h4>
+      <p class="note" style="margin-bottom:12px">${when}</p>
+      <div class="field"><label>Subject</label><input class="tpl-subject" value="${esc(t.subject)}" /></div>
+      <div class="field" style="margin-bottom:0"><label>Message</label><textarea class="tpl-body" rows="5">${esc(t.body)}</textarea></div>
+    </div>`;
+  }).join("");
+}
+$("email-save").addEventListener("click", () => {
+  const templates = {};
+  document.querySelectorAll("#email-templates [data-template]").forEach((card) => {
+    templates[card.dataset.template] = {
+      enabled: card.querySelector(".tpl-enabled").checked,
+      subject: card.querySelector(".tpl-subject").value.trim(),
+      body: card.querySelector(".tpl-body").value.trim(),
+    };
+  });
+  const message = val("confirm-message");
+  saveSettings({ orderConfirmationMessage: message === DEFAULT_CONFIRMATION_MESSAGE ? "" : message, emailTemplates: templates }, $("email-msg"));
+});
+
+// =====================================================================
+// HOMEPAGE
+// =====================================================================
+let featuredIds = [];
+function renderHomepage() {
+  $("hero-heading").value = S.heroHeading;
+  $("hero-tagline").value = S.heroTagline;
+  $("hero-image").value = S.heroImageUrl;
+  previewRefreshers["hero-image"]();
+  $("announcement").value = S.announcement;
+  featuredIds = (S.featuredProductIds || []).filter((id) => products.some((p) => p.id === id) || merch.some((m) => m.id === id));
+  drawFeatured();
+}
+function itemLabel(id) {
+  const p = products.find((x) => x.id === id);
+  if (p) return p.name;
+  const m = merch.find((x) => x.id === id);
+  return m ? `${m.name} (merch)` : id;
+}
+function drawFeatured() {
+  $("featured-rows").innerHTML = featuredIds.length ? featuredIds.map((id, i) => `
+    <div class="row-item"><div class="row-top">
+      <span style="flex:1; font-size:.9rem; font-weight:600;">${esc(itemLabel(id))}</span>
+      <button class="icon-btn" data-feat-up="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move up">&uarr;</button>
+      <button class="icon-btn" data-feat-down="${i}" ${i === featuredIds.length - 1 ? "disabled" : ""} aria-label="Move down">&darr;</button>
+      <button class="icon-btn remove" data-feat-remove="${i}" aria-label="Remove">&times;</button>
+    </div></div>`).join("") : `<p class="empty">Nothing featured, so the row is hidden.</p>`;
+  const available = [...products.map((p) => [p.id, p.name]), ...merch.map((m) => [m.id, `${m.name} (merch)`])].filter(([id]) => !featuredIds.includes(id));
+  $("featured-add-select").innerHTML = available.length ? available.map(([id, name]) => `<option value="${esc(id)}">${esc(name)}</option>`).join("") : `<option value="">No more items</option>`;
+}
+$("featured-rows").addEventListener("click", (e) => {
+  const d = e.target.dataset;
+  if (d.featUp != null) move(featuredIds, Number(d.featUp), -1);
+  else if (d.featDown != null) move(featuredIds, Number(d.featDown), 1);
+  else if (d.featRemove != null) featuredIds.splice(Number(d.featRemove), 1);
+  else return;
+  drawFeatured();
+});
+$("featured-add").addEventListener("click", () => {
+  const id = $("featured-add-select").value;
+  if (!id || featuredIds.length >= 12) return;
+  featuredIds.push(id);
+  drawFeatured();
+});
+$("home-save").addEventListener("click", () => {
+  saveSettings({ heroHeading: val("hero-heading"), heroTagline: val("hero-tagline"), heroImageUrl: val("hero-image"), announcement: val("announcement"), featuredProductIds: featuredIds }, $("home-msg"));
+});
+
+// =====================================================================
+// FAQ
+// =====================================================================
+let faqRows = [];   // [{ q, a }]
+function renderFaq() {
+  faqRows = (S.faqs && S.faqs.length ? S.faqs : []).map((f) => ({ q: f.q, a: f.a }));
+  drawFaq();
+}
+function drawFaq() {
+  $("faq-rows").innerHTML = faqRows.length ? faqRows.map((f, i) => `
+    <div class="row-item">
+      <div class="row-top">
+        <input data-faq-q="${i}" value="${esc(f.q)}" placeholder="Question" />
+        <button class="icon-btn" data-faq-up="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move up">&uarr;</button>
+        <button class="icon-btn" data-faq-down="${i}" ${i === faqRows.length - 1 ? "disabled" : ""} aria-label="Move down">&darr;</button>
+        <button class="icon-btn remove" data-faq-remove="${i}" aria-label="Remove">&times;</button>
+      </div>
+      <textarea data-faq-a="${i}" placeholder="Answer">${esc(f.a)}</textarea>
+    </div>`).join("") : `<p class="empty">Using the site's built-in FAQ. Click "Load built-in FAQ" to start editing it, or add your own questions.</p>`;
+}
+$("faq-rows").addEventListener("input", (e) => {
+  if (e.target.dataset.faqQ != null) faqRows[e.target.dataset.faqQ].q = e.target.value;
+  if (e.target.dataset.faqA != null) faqRows[e.target.dataset.faqA].a = e.target.value;
+});
+$("faq-rows").addEventListener("click", (e) => {
+  const d = e.target.dataset;
+  if (d.faqUp != null) move(faqRows, Number(d.faqUp), -1);
+  else if (d.faqDown != null) move(faqRows, Number(d.faqDown), 1);
+  else if (d.faqRemove != null) faqRows.splice(Number(d.faqRemove), 1);
+  else return;
+  drawFaq();
+});
+$("faq-add").addEventListener("click", () => { faqRows.push({ q: "", a: "" }); drawFaq(); });
+$("faq-defaults").addEventListener("click", () => {
+  if (faqRows.length && !confirm("Replace the questions below with the built-in FAQ?")) return;
+  faqRows = DEFAULT_FAQS.map((f) => ({ q: f.q, a: f.a }));
+  drawFaq();
+});
+$("faq-save").addEventListener("click", async () => {
+  const faqs = faqRows.map((f) => ({ q: f.q.trim(), a: f.a.trim() })).filter((f) => f.q && f.a);
+  const ok = await saveSettings({ faqs }, $("faq-msg"));
+  if (ok) { S.faqs = faqs.length ? faqs : null; renderFaq(); }
+});
+
+// =====================================================================
+// SHIPPING & RETURNS TEXT
+// =====================================================================
+function renderPolicies() { $("policy-text").value = S.shippingContent || ""; }
+$("policy-defaults").addEventListener("click", () => {
+  if ($("policy-text").value.trim() && !confirm("Replace the text below with the built-in text?")) return;
+  $("policy-text").value = DEFAULT_SHIPPING_CONTENT;
+});
+$("policy-save").addEventListener("click", () => {
+  const text = $("policy-text").value.trim();
+  saveSettings({ shippingContent: text === DEFAULT_SHIPPING_CONTENT.trim() ? "" : text }, $("policy-msg"));
+});
+
+// =====================================================================
+// CONTACT & FOOTER
+// =====================================================================
+function renderContact() {
+  $("contact-email").value = S.contactEmail;
+  $("contact-phone").value = S.contactPhone;
+  $("contact-address").value = S.contactAddress;
+  $("whatsapp-number").value = S.whatsappNumber;
+  $("working-hours").value = S.workingHours;
+  $("footer-tagline").value = S.footerTagline;
+  ["instagram", "tiktok", "facebook", "twitter", "youtube"].forEach((k) => ($("social-" + k).value = (S.socials || {})[k] || ""));
+}
+$("contact-save").addEventListener("click", () => {
+  const email = val("contact-email");
+  if (email && !/^\S+@\S+\.\S+$/.test(email)) { showMsg($("contact-msg"), "That doesn't look like a valid email address.", false); return; }
+  saveSettings({
+    contactEmail: email, contactPhone: val("contact-phone"), contactAddress: val("contact-address"),
+    whatsappNumber: val("whatsapp-number"), workingHours: val("working-hours"), footerTagline: val("footer-tagline"),
+    socials: { instagram: val("social-instagram"), tiktok: val("social-tiktok"), facebook: val("social-facebook"), twitter: val("social-twitter"), youtube: val("social-youtube") },
+  }, $("contact-msg"));
+});
+</script>
+</body>
+</html>

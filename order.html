@@ -1,0 +1,573 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cart & Checkout | Iron Ascension</title><link rel="stylesheet" href="css/style.css"></head><body data-page="checkout"><div id="promo-banner-mount"></div><header class="header"><div class="container nav">
+<a href="index.html" class="brand-link"><img class="logo" src="assets/images/logo/logo-header.png" alt="Iron Ascension"><span class="brand-text">IRON ASCENSION</span></a>
+<div class="nav-right">
+<nav class="navlinks">
+<a href="index.html">Home</a><a href="products.html">Products</a><a href="merch.html">Merch</a><a href="about.html">About</a><a href="contact.html">Contact</a>
+</nav>
+<div class="header-actions">
+<a class="cart-icon-link" id="cart-nav-link" href="order.html" aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg><span id="cart-count" class="cart-badge" hidden>0</span></a>
+</div>
+</div><button class="mobile-menu" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button></div></header><main><section class="pagehero"><div class="container"><div class="eyebrow">Cart</div><h1>Your Cart</h1><p>Review your items and submit an order request. Nothing is charged here - our team follows up to confirm pricing and payment.</p></div></section>
+
+<section class="section"><div class="container checkout-grid">
+
+<div>
+  <div class="card">
+    <h2>Order Summary</h2>
+    <div id="cart-items"></div>
+    <div id="cart-summary" class="cart-summary" hidden>
+
+      <div class="promo-field-row">
+        <input type="text" id="promo-code-input" placeholder="Promo code">
+        <button type="button" class="btn btn-outline" id="promo-apply-btn">Apply</button>
+      </div>
+      <div id="promo-status" class="promo-status" hidden></div>
+
+      <label for="payment-method-select" style="font:800 11px Montserrat;text-transform:uppercase;letter-spacing:.4px;color:#888;display:block;margin-bottom:8px">Payment Method</label>
+      <select id="payment-method-select" class="payment-method-select">
+        <option value="">Select a payment method</option>
+        <option value="Bitcoin">Bitcoin (5% off)</option>
+        <option value="Cashapp">Cashapp</option>
+        <option value="Apple Pay">Apple Pay</option>
+        <option value="Zelle">Zelle</option>
+        <option value="Chime">Chime</option>
+        <option value="PayPal">PayPal</option>
+      </select>
+      <div id="payment-instructions" class="payment-instructions" hidden></div>
+
+      <div id="promo-nudges"></div>
+
+      <div class="price-breakdown">
+        <div class="price-row strike" id="row-subtotal-strike" hidden><span>Subtotal</span><span id="val-subtotal-strike"></span></div>
+        <div class="price-row discount" id="row-discount" hidden><span id="label-discount"></span><span id="val-discount"></span></div>
+        <div class="price-row" id="row-subtotal-plain"><span>Subtotal</span><span id="val-subtotal-plain"></span></div>
+        <div class="price-row shipping" id="row-shipping"><span>Shipping</span><span id="val-shipping"></span></div>
+        <div id="gift-rows"></div>
+        <div class="price-row total"><span>Total</span><span id="val-total"></span></div>
+      </div>
+      <p id="cart-tbd-note" class="cart-tbd-note" hidden>One or more items don't have a price set yet - our team will confirm the final total with you.</p>
+    </div>
+    <div id="cart-empty" class="empty-cart" hidden>
+      <p class="lead">Your cart is empty.</p>
+      <div class="actions"><a class="btn btn-red" href="products.html">Browse Products</a><a class="btn btn-outline" href="merch.html">Browse Merch</a></div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <div class="card" id="checkout-card">
+    <h2>Checkout Details</h2>
+    <p class="lead" style="margin-bottom:20px">Fill in your details below. We'll contact you to confirm your order.</p>
+    <form class="form" id="checkout-form" novalidate>
+      <label for="cust-name">Name</label>
+      <input id="cust-name" name="name" placeholder="Your name">
+      <label for="cust-email">Email *</label>
+      <input id="cust-email" name="email" type="email" placeholder="you@example.com" required>
+      <label for="cust-phone">Phone</label>
+      <input id="cust-phone" name="phone" type="tel" placeholder="Your phone number">
+      <div class="contact-field">
+        <label for="cust-contact">How should we contact you about your order? *</label>
+        <p class="field-hint">Pick the one you're most active on.</p>
+        <select id="cust-contact" name="contactPreference" required>
+          <option value="">Select one</option>
+          <option value="Email">Email</option>
+          <option value="Text message">Text message</option>
+          <option value="WhatsApp">WhatsApp</option>
+        </select>
+        <div class="contact-ok" id="contact-ok" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Please check this regularly so you never miss an update on your order.</span></div>
+      </div>
+      <label for="cust-address">Shipping Address</label>
+      <textarea id="cust-address" name="address" placeholder="Street, city, state, zip"></textarea>
+      <label for="cust-notes">Order Notes</label>
+      <textarea id="cust-notes" name="notes" placeholder="Additional information"></textarea>
+      <button class="btn btn-red checkout-btn" type="submit" id="checkout-submit">Send Order Request by Email</button>
+      <button class="btn btn-green checkout-btn" type="button" id="checkout-whatsapp">Send Order Request by WhatsApp</button>
+      <p class="admin-note" style="margin:10px 0 0; font-size:0.78rem; color:#888; line-height:1.6;">WhatsApp opens a chat with your order summary already typed in - just hit send. This is also saved to the team's Notifications tab, separately from the email option above.</p>
+      <div id="checkout-msg" class="checkout-msg" hidden></div>
+    </form>
+  </div>
+
+  <div class="card order-success" id="order-success" hidden>
+    <h2>Order Request Received</h2>
+    <p class="lead">Thanks<span id="success-name"></span> - your order reference is <strong id="success-order-number"></strong>.</p>
+    <p style="color:#666;line-height:1.7" id="success-message">Our team will contact you shortly to confirm pricing and payment. Nothing has been charged.</p>
+    <div class="order-instructions" id="success-instructions" hidden></div>
+    <div class="actions"><a class="btn btn-red" href="products.html">Continue Browsing</a></div>
+  </div>
+</div>
+
+</div></section>
+
+</main><footer class="footer"><div class="container footer-grid">
+<div><a href="index.html"><img src="assets/images/logo/logo-footer.png" alt="Iron Ascension"></a><p class="footer-tagline" style="color:#aaa;line-height:1.6;max-width:340px">Strength. Science. Discipline.</p><div id="footer-social-mount" class="footer-social"></div></div>
+<div><h4>Explore</h4><a href="index.html">Home</a><a href="products.html">Products</a><a href="merch.html">Merch</a></div>
+<div><h4>Company</h4><a href="about.html">About</a><a href="contact.html">Contact</a><a href="order.html">Cart</a></div>
+<div><h4>Legal</h4><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="shipping.html">Shipping & Returns</a></div>
+</div><div class="container bottom">© 2026 Iron Ascension. All rights reserved.</div></footer>
+<script src="js/promo-banner.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/currency.js"></script>
+<script src="js/promo.js"></script>
+<script>
+function escapeHtmlCart(str) {
+  if (str == null) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// ---------- Welcome-code state ----------
+// welcomeApplied reflects a code that passed server-side validation this
+// session. localStorage additionally blocks re-claiming in this browser
+// even before they retype it (checked instantly, no round trip).
+const WELCOME_USED_KEY = "ia_welcome_code_used";
+let welcomeApplied = false;
+let paymentMethod = "";
+let giftCapColor = GIFT_CAP_DEFAULT_COLOR;
+
+function cartRowHtml(line) {
+  const lineTotal = line.priceCents == null ? "Price TBD" : formatCents(line.priceCents * line.qty);
+  const variantLabel = cartLineVariantLabel(line);
+  return `<div class="cart-row" data-id="${line.id}" data-type="${line.type}" data-size="${escapeHtmlCart(line.size || "")}" data-color="${escapeHtmlCart(line.color || "")}">
+    <img class="cart-row-img" src="${escapeHtmlCart(line.image) || "assets/images/product-placeholder.svg"}" alt="">
+    <div class="cart-row-info">
+      <div class="cart-row-name">${escapeHtmlCart(line.name)}</div>
+      ${variantLabel ? `<div class="cart-row-variant">${escapeHtmlCart(variantLabel)}</div>` : ""}
+      <div class="cart-row-unit">${line.priceCents == null ? "Price TBD" : formatCents(line.priceCents)} each</div>
+    </div>
+    <div class="qty-stepper qty-stepper-sm">
+      <button type="button" class="qty-btn qty-minus" aria-label="Decrease quantity">&minus;</button>
+      <input type="number" class="qty-input cart-qty-input" min="1" value="${line.qty}" aria-label="Quantity">
+      <button type="button" class="qty-btn qty-plus" aria-label="Increase quantity">+</button>
+    </div>
+    <div class="cart-row-total">${lineTotal}</div>
+    <button type="button" class="cart-remove" aria-label="Remove item">&times;</button>
+  </div>`;
+}
+
+function giftRowHtml() {
+  const swatches = GIFT_CAP_OPTIONS.map((o) => `<button type="button" class="gift-swatch${o.color === giftCapColor ? " active" : ""}" data-gift="cap-color" data-value="${escapeHtmlCart(o.color)}">${escapeHtmlCart(o.color)}</button>`).join("");
+  return `<div class="cart-row gift-row">
+    <img class="cart-row-img" src="${escapeHtmlCart(giftCapImage(giftCapColor))}" alt="">
+    <div class="cart-row-info">
+      <div class="cart-row-name">Cap<span class="gift-tag">Free Gift</span></div>
+      <div class="gift-picker"><span class="gift-picker-label">Color</span><div class="gift-swatch-row">${swatches}</div></div>
+    </div>
+    <div></div>
+    <div class="cart-row-total">$0</div>
+    <div></div>
+  </div>`;
+}
+
+let lastPromoState = null;
+
+function renderCart() {
+  const cart = getCart();
+  const itemsEl = document.getElementById("cart-items");
+  const summaryEl = document.getElementById("cart-summary");
+  const emptyEl = document.getElementById("cart-empty");
+  const checkoutCard = document.getElementById("checkout-card");
+
+  if (!cart.length) {
+    itemsEl.innerHTML = "";
+    summaryEl.hidden = true;
+    emptyEl.hidden = false;
+    checkoutCard.hidden = true;
+    return;
+  }
+
+  emptyEl.hidden = true;
+  checkoutCard.hidden = false;
+
+  const state = computePromoState(cart, welcomeApplied, paymentMethod);
+  lastPromoState = state;
+
+  itemsEl.innerHTML = cart.map(cartRowHtml).join("")
+    + (state.giftCapUnlocked ? giftRowHtml() : "");
+  summaryEl.hidden = false;
+
+  const hasDiscount = state.discountCents > 0;
+  document.getElementById("row-subtotal-strike").hidden = !hasDiscount;
+  document.getElementById("row-subtotal-plain").hidden = hasDiscount;
+  document.getElementById("val-subtotal-strike").textContent = formatCents(state.subtotalCents) + (state.hasUnpriced ? " +" : "");
+  document.getElementById("val-subtotal-plain").textContent = formatCents(state.subtotalCents) + (state.hasUnpriced ? " +" : "");
+
+  document.getElementById("row-discount").hidden = !hasDiscount;
+  if (hasDiscount) {
+    document.getElementById("label-discount").textContent = `Discount (${state.appliedPct}% off)`;
+    document.getElementById("val-discount").textContent = "-" + formatCents(state.discountCents);
+  }
+
+  document.getElementById("val-shipping").textContent = state.hasUnpriced ? "Confirmed after order request" : (state.freeShipping ? "Free" : formatCents(state.shippingCents));
+  document.getElementById("gift-rows").innerHTML = state.giftCapUnlocked
+    ? `<div class="price-row gift"><span>Free Gift</span><span>Cap</span></div>`
+    : "";
+  document.getElementById("val-total").textContent = formatCents(state.grandTotalCents) + (state.hasUnpriced ? " +" : "");
+  document.getElementById("cart-tbd-note").hidden = !state.hasUnpriced;
+
+  const nudges = [state.nextTierNudge, state.nextThresholdNudge].filter(Boolean);
+  document.getElementById("promo-nudges").innerHTML = nudges.map((n) => `<div class="promo-nudge">${escapeHtmlCart(n)}</div>`).join("");
+}
+
+document.addEventListener("click", (e) => {
+  const removeBtn = e.target.closest(".cart-remove");
+  if (removeBtn) {
+    const row = removeBtn.closest(".cart-row");
+    removeFromCart(row.dataset.id, row.dataset.type, row.dataset.size, row.dataset.color);
+    renderCart();
+  }
+});
+document.addEventListener("change", (e) => {
+  if (e.target.classList.contains("cart-qty-input")) {
+    const row = e.target.closest(".cart-row");
+    updateCartQty(row.dataset.id, row.dataset.type, e.target.value, row.dataset.size, row.dataset.color);
+    renderCart();
+  }
+});
+
+// Fill the dropdown from the admin-set list (falls back to the defaults).
+function renderPaymentOptions() {
+  const sel = document.getElementById("payment-method-select");
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Select a payment method</option>' + PAYMENT_METHODS.map((m) => {
+    const isBtc = String(m).trim().toLowerCase() === "bitcoin";
+    const label = isBtc && PROMO_SETTINGS.cryptoDiscountPct > 0 ? `${m} (${PROMO_SETTINGS.cryptoDiscountPct}% off)` : m;
+    return `<option value="${escapeHtmlCart(m)}">${escapeHtmlCart(label)}</option>`;
+  }).join("");
+  if (prev && PAYMENT_METHODS.includes(prev)) sel.value = prev; else if (prev) { sel.value = ""; paymentMethod = ""; }
+}
+if (window.promoSettingsPromise) window.promoSettingsPromise.then(() => { renderPaymentOptions(); showPaymentInstructions(); renderCart(); });
+
+// Shows the admin-written "how to pay" text for the chosen method.
+function showPaymentInstructions() {
+  const box = document.getElementById("payment-instructions");
+  const text = paymentMethod && PROMO_SETTINGS.paymentInstructions ? String(PROMO_SETTINGS.paymentInstructions[paymentMethod] || "").trim() : "";
+  if (!text) { box.hidden = true; box.innerHTML = ""; return; }
+  box.innerHTML = `<strong>How to pay with ${escapeHtmlCart(paymentMethod)}</strong>${escapeHtmlCart(text)}`;
+  box.hidden = false;
+}
+document.getElementById("payment-method-select").addEventListener("change", (e) => {
+  paymentMethod = e.target.value;
+  showPaymentInstructions();
+  renderCart();
+});
+
+document.addEventListener("click", (e) => {
+  const swatch = e.target.closest("[data-gift]");
+  if (!swatch) return;
+  const kind = swatch.dataset.gift;
+  const value = swatch.dataset.value;
+  if (kind === "cap-color") giftCapColor = value;
+  renderCart();
+});
+
+document.getElementById("promo-apply-btn").addEventListener("click", async () => {
+  const input = document.getElementById("promo-code-input");
+  const statusEl = document.getElementById("promo-status");
+  const code = input.value.trim();
+  if (!code) return;
+
+  if (localStorage.getItem(WELCOME_USED_KEY)) {
+    statusEl.hidden = false;
+    statusEl.className = "promo-status invalid";
+    statusEl.textContent = "This code has already been used in this browser.";
+    return;
+  }
+
+  const email = document.getElementById("cust-email").value.trim();
+  try {
+    const res = await fetch("/.netlify/functions/validate-promo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, email: email || undefined }),
+    });
+    const data = await res.json().catch(() => ({}));
+    statusEl.hidden = false;
+    if (data.valid) {
+      welcomeApplied = true;
+      statusEl.className = "promo-status valid";
+      statusEl.textContent = `Code applied: ${data.pct}% off.`;
+    } else {
+      welcomeApplied = false;
+      statusEl.className = "promo-status invalid";
+      statusEl.textContent = data.reason || "Invalid code.";
+    }
+    renderCart();
+  } catch (err) {
+    statusEl.hidden = false;
+    statusEl.className = "promo-status invalid";
+    statusEl.textContent = "Couldn't check that code right now - please try again.";
+  }
+});
+
+// The contact preference decides which detail we must have: email for
+// "Email", a phone number for "Text message" / "WhatsApp".
+function contactError(form) {
+  const pref = form.contactPreference.value;
+  if (!pref) return "Please choose how we should contact you about your order.";
+  if (pref === "Email" && !form.email.value.trim()) return "Please enter your email so we can contact you.";
+  if (pref !== "Email" && !form.phone.value.trim()) return `Please enter your phone number so we can reach you by ${pref.toLowerCase()}.`;
+  return "";
+}
+document.getElementById("cust-contact").addEventListener("change", (e) => {
+  document.getElementById("contact-ok").hidden = !e.target.value;
+});
+
+document.getElementById("checkout-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const msg = document.getElementById("checkout-msg");
+  const submitBtn = document.getElementById("checkout-submit");
+  const email = form.email.value.trim();
+  if (!email) {
+    msg.hidden = false;
+    msg.className = "checkout-msg error";
+    msg.textContent = "Please enter your email so we can confirm your order.";
+    return;
+  }
+  const contactMsg = contactError(form);
+  if (contactMsg) {
+    msg.hidden = false;
+    msg.className = "checkout-msg error";
+    msg.textContent = contactMsg;
+    return;
+  }
+  const cart = getCart();
+  if (!cart.length) return;
+
+  const items = cart.map((line) => {
+    const variantLabel = cartLineVariantLabel(line);
+    return {
+      id: line.id,
+      type: line.type,
+      name: variantLabel ? `${line.name} (${variantLabel})` : line.name,
+      priceCents: line.priceCents,
+      qty: line.qty,
+    };
+  });
+  const customRequests = cart
+    .filter((line) => line.customSize || line.customColor)
+    .map((line) => {
+      const bits = [];
+      if (line.customSize) bits.push(`size "${line.customSize}"`);
+      if (line.customColor) bits.push(`color "${line.customColor}"`);
+      return `${line.name}: requested custom ${bits.join(" and ")}`;
+    });
+  const notesParts = [];
+  if (form.notes.value.trim()) notesParts.push(form.notes.value.trim());
+  if (customRequests.length) notesParts.push(`Custom requests:\n${customRequests.join("\n")}`);
+
+  const customer = {
+    name: form.name.value.trim(),
+    email,
+    phone: form.phone.value.trim(),
+    contactPreference: form.contactPreference.value,
+    address: form.address.value.trim(),
+    notes: notesParts.join("\n\n"),
+  };
+
+  const state = computePromoState(cart, welcomeApplied, paymentMethod);
+  const promoCode = welcomeApplied ? document.getElementById("promo-code-input").value.trim() : null;
+
+  const giftItems = [];
+  if (state.giftCapUnlocked) giftItems.push({ id: "merch-cap", name: "Cap", color: giftCapColor, size: null, image: giftCapImage(giftCapColor) });
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
+  msg.hidden = true;
+
+  try {
+    const res = await fetch("/.netlify/functions/submit-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items,
+        customer,
+        promoCode,
+        paymentMethod: paymentMethod || null,
+        discountPct: state.appliedPct,
+        discountCents: state.discountCents,
+        giftItems,
+        shippingFree: state.freeShipping,
+        shippingCents: state.shippingCents,
+        totalCents: state.hasUnpriced ? null : state.grandTotalCents,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "Something went wrong submitting your order.");
+    }
+    if (promoCode) localStorage.setItem(WELCOME_USED_KEY, "1");
+    clearCart();
+    document.getElementById("success-name").textContent = customer.name ? `, ${customer.name}` : "";
+    document.getElementById("success-order-number").textContent = data.orderNumber || "";
+    if (data.confirmationMessage) document.getElementById("success-message").textContent = data.confirmationMessage;
+    const instr = document.getElementById("success-instructions");
+    if (data.paymentInstructions) {
+      instr.innerHTML = `<strong>How to pay${paymentMethod ? " with " + escapeHtmlCart(paymentMethod) : ""}</strong>${escapeHtmlCart(data.paymentInstructions)}`;
+      instr.hidden = false;
+    } else {
+      instr.hidden = true;
+    }
+    document.getElementById("checkout-card").hidden = true;
+    document.getElementById("order-success").hidden = false;
+    document.getElementById("cart-items").innerHTML = "";
+    document.getElementById("cart-summary").hidden = true;
+    document.getElementById("cart-empty").hidden = true;
+    showToast(`Order request received - a confirmation email is on its way to ${customer.email}.`, "success");
+  } catch (err) {
+    msg.hidden = false;
+    msg.className = "checkout-msg error";
+    msg.textContent = err.message + " Your cart has been kept - please try again, or reach us via the Contact page.";
+    showToast("Something went wrong submitting your order. Your cart has been kept - please try again.", "error");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Send Order Request by Email";
+  }
+});
+
+if (localStorage.getItem(WELCOME_USED_KEY)) {
+  const statusEl = document.getElementById("promo-status");
+  statusEl.hidden = false;
+  statusEl.className = "promo-status invalid";
+  statusEl.textContent = "You've already used a welcome code in this browser.";
+}
+
+// ---------- Order Request via WhatsApp ----------
+// A lighter-weight alternative to the email flow above: no backend
+// call, no order record saved in /admin.html's Orders tab - it just
+// opens a WhatsApp chat with the cart contents already typed in as a
+// message, so the customer hits send and it lands directly in the
+// store's WhatsApp. Doesn't require the email field. The WhatsApp
+// number comes live from Site Settings in /admin.html; falls back to
+// the site default if that hasn't loaded.
+const WHATSAPP_ORDER_DEFAULT_NUMBER = "+1 (423) 484-7466";
+async function getOrderWhatsAppNumber() {
+  try {
+    const res = await fetch("/.netlify/functions/get-catalog");
+    if (!res.ok) return WHATSAPP_ORDER_DEFAULT_NUMBER;
+    const data = await res.json();
+    return (data.settings && data.settings.whatsappNumber) || WHATSAPP_ORDER_DEFAULT_NUMBER;
+  } catch (err) {
+    return WHATSAPP_ORDER_DEFAULT_NUMBER;
+  }
+}
+function buildWhatsAppOrderMessage(cart, form) {
+  const lines = ["Order Request - Iron Ascension", ""];
+  cart.forEach((line) => {
+    const variantLabel = cartLineVariantLabel(line);
+    const name = variantLabel ? `${line.name} (${variantLabel})` : line.name;
+    const price = line.priceCents != null ? formatMoneyCentsUSD(line.priceCents) : "Price TBD";
+    lines.push(`- ${name} x${line.qty} - ${price}`);
+  });
+  const state = computePromoState(cart, welcomeApplied, paymentMethod);
+  lines.push("");
+  lines.push(`Subtotal: ${formatMoneyCentsUSD(state.subtotalCents)}${state.hasUnpriced ? " +" : ""}`);
+  if (state.discountCents > 0) lines.push(`Discount (${state.appliedPct}% off): -${formatMoneyCentsUSD(state.discountCents)}`);
+  lines.push(`Shipping: ${state.hasUnpriced ? "To be confirmed" : (state.freeShipping ? "Free" : formatMoneyCentsUSD(state.shippingCents))}`);
+  if (state.giftCapUnlocked) lines.push(`Free gift: Cap (${giftCapColor})`);
+  lines.push(`Total: ${state.hasUnpriced ? "TBD" : formatMoneyCentsUSD(state.grandTotalCents)}`);
+  if (paymentMethod) lines.push(`Payment method: ${paymentMethod}`);
+  const name = form.name.value.trim();
+  const phone = form.phone.value.trim();
+  const email = form.email.value.trim();
+  const address = form.address.value.trim();
+  const notes = form.notes.value.trim();
+  lines.push("");
+  lines.push(`Contact me by: ${form.contactPreference.value}`);
+  if (name || phone || email || address || notes) {
+    lines.push("");
+    if (name) lines.push(`Name: ${name}`);
+    if (phone) lines.push(`Phone: ${phone}`);
+    if (email) lines.push(`Email: ${email}`);
+    if (address) lines.push(`Address: ${address}`);
+    if (notes) lines.push(`Notes: ${notes}`);
+  }
+  return lines.join("\n");
+}
+document.getElementById("checkout-whatsapp").addEventListener("click", async () => {
+  const cart = getCart();
+  if (!cart.length) return;
+  const checkoutForm = document.getElementById("checkout-form");
+  const contactMsg = contactError(checkoutForm);
+  if (contactMsg) {
+    const msg = document.getElementById("checkout-msg");
+    msg.hidden = false;
+    msg.className = "checkout-msg error";
+    msg.textContent = contactMsg;
+    return;
+  }
+  document.getElementById("checkout-msg").hidden = true;
+  const btn = document.getElementById("checkout-whatsapp");
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Opening WhatsApp...";
+  try {
+    const form = document.getElementById("checkout-form");
+    const items = cart.map((line) => {
+      const variantLabel = cartLineVariantLabel(line);
+      return {
+        id: line.id,
+        type: line.type,
+        name: variantLabel ? `${line.name} (${variantLabel})` : line.name,
+        priceCents: line.priceCents,
+        qty: line.qty,
+      };
+    });
+    const customer = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      phone: form.phone.value.trim(),
+      contactPreference: form.contactPreference.value,
+      address: form.address.value.trim(),
+      notes: form.notes.value.trim(),
+    };
+    const state = computePromoState(cart, welcomeApplied, paymentMethod);
+
+    // Record it too (shows up in the Notifications tab in /admin.html
+    // under "Orders by WhatsApp") - best effort, doesn't block opening
+    // WhatsApp if the backend isn't reachable.
+    fetch("/.netlify/functions/submit-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items,
+        customer,
+        paymentMethod: paymentMethod || null,
+        channel: "whatsapp",
+        discountPct: state.appliedPct,
+        discountCents: state.discountCents,
+        shippingFree: state.freeShipping,
+        shippingCents: state.shippingCents,
+        totalCents: state.hasUnpriced ? null : state.grandTotalCents,
+      }),
+    }).catch(() => {});
+
+    const number = await getOrderWhatsAppNumber();
+    const digits = String(number || "").replace(/[^\d]/g, "");
+    const message = buildWhatsAppOrderMessage(cart, form);
+    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(message)}`, "_blank");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+});
+
+window.promoSettingsPromise.then(renderCart);
+renderCart();
+document.addEventListener("ia:currencychange", renderCart);
+</script>
+<script src="js/scroll-reveal.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/main.js"></script><script src="js/site-popups.js"></script>
+<script src="js/site-content.js"></script>
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = '36c2af76362c06ccc6cbf0b64d8afcc28a46498f';
+window.smartsupp||(function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
+</script>
+<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+</body></html>
